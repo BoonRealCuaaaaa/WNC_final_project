@@ -1,0 +1,116 @@
+import { loginApi } from "@/api/auth.api";
+import { Button } from "@/components/shared/button";
+import { useToast } from "@/hooks/use-toast";
+import { setAccessToken, setRefreshToken, setRole } from "@/utils/auth";
+import { useMutation } from "@tanstack/react-query";
+import { Input } from "antd";
+import { useRef, useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+
+const CustomerTab = () => {
+   const recaptcha = useRef<ReCAPTCHA | null>(null);
+   const navigate = useNavigate();
+   const { handleSubmit, control } = useForm();
+   const { toast } = useToast();
+   const [usernameStatus, setUsernameStatus] = useState<"" | "error" | "warning">("");
+   const [passwordStatus, setPasswordStatus] = useState<"" | "error" | "warning">("");
+
+   const { mutate: mutateLogin } = useMutation({
+      mutationFn: loginApi,
+      onSuccess: (response) => {
+         if (response.status === 200) {
+            setAccessToken(response.data.accessToken);
+            setRefreshToken(response.data.refreshToken);
+            setRole(response.data.role);
+            navigate("/");
+         }
+      },
+   });
+
+   const onLoginSubmit = (data) => {
+      const capchaValue = recaptcha.current ? recaptcha.current.getValue() : "";
+
+      if (!capchaValue) {
+         toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Vui lòng xác nhận bạn không phải là người máy",
+         });
+         return;
+      }
+
+      if (!data.username) {
+         setUsernameStatus("error");
+         toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Tên đăng nhập không được để trống",
+         });
+         
+         return;
+
+      }
+
+      if (!data.password) {
+         setPasswordStatus("error");
+         toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Mật khẩu không được để trống",
+         });
+
+         return;
+
+      }
+
+      if (data.username && data.password) {
+         mutateLogin(data);
+      }
+   };
+
+   return (
+      <div className="flex flex-col space-y-6 my-6 ">
+         <Controller
+            name="username"
+            control={control}
+            render={({ field }) => (
+               <Input
+                  status={usernameStatus}
+                  onInput={() => {
+                     setUsernameStatus("");
+                  }}
+                  placeholder="Tên đăng nhập..."
+                  {...field}
+               />
+            )}
+         />
+         <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+               <Input.Password
+                  onInput={() => {
+                     setPasswordStatus("");
+                  }}
+                  status={passwordStatus}
+                  placeholder="Mật khẩu..."
+                  {...field}
+               />
+            )}
+         />
+         <div className="flex justify-center  bg-[#f9f9f9]">
+            <ReCAPTCHA
+               ref={recaptcha}
+               sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY} // Thay YOUR_RECAPTCHA_SITE_KEY bằng khóa của bạn
+               size="normal"
+               className="border-0"
+            />
+         </div>
+         <Button onClick={handleSubmit(onLoginSubmit)}>Đăng nhập</Button>
+      </div>
+   );
+};
+
+export default CustomerTab;
