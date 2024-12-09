@@ -17,6 +17,9 @@ export default {
          },
          colors: {
             "primary-purple": "#7c3aed",
+            "primary-gray": "#6b7280",
+
+            // Shadcn color
             background: "hsl(var(--background))",
             foreground: "hsl(var(--foreground))",
             card: {

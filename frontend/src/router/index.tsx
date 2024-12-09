@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import AuthRoutes from "./auth";
 import CustomerRoutes from "./customer";
 import PageError401 from "@/pages/error/401";
+import CustomerLayout from "@/pages/customer";
 
 const AppRouter = () => {
    return (
@@ -10,7 +11,9 @@ const AppRouter = () => {
          <Route path="/login" element={<AuthRoutes />} />
          <Route path="/401" element={<PageError401 />} />
          <Route element={<AuthGuard requiredRole="Customer" />}>
-            <Route path="/" element={<CustomerRoutes />} />
+            <Route element={<CustomerLayout />}>
+               <Route path="/*" element={<CustomerRoutes />} />
+            </Route>
          </Route>
       </Routes>
    );
