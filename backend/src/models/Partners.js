@@ -1,7 +1,7 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class SysLog extends Model {
+export default class Partners extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
     id: {
@@ -10,25 +10,29 @@ export default class SysLog extends Model {
       allowNull: false,
       primaryKey: true
     },
-    timestamp: {
-      type: DataTypes.DATE,
+    bankName: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
-    level: {
-      type: DataTypes.STRING(45),
+    domain: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
-    message: {
-      type: DataTypes.STRING(45),
+    partenerPublicKey: {
+      type: DataTypes.TEXT,
       allowNull: true
     },
-    data: {
-      type: DataTypes.JSON,
+    ourPrivateKey: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    ourPublicKey: {
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {
     sequelize,
-    tableName: 'sys_log',
+    tableName: 'partners',
     timestamps: false,
     indexes: [
       {

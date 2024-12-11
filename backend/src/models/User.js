@@ -6,16 +6,20 @@ export default class User extends Model {
   return super.init({
     id: {
       autoIncrement: true,
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true
     },
     username: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     password: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    role: {
+      type: DataTypes.ENUM('CUSTOMER','TELLER','ADMIN'),
       allowNull: true
     }
   }, {

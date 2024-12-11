@@ -1,7 +1,7 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class RefreshToken extends Model {
+export default class Refreshtoken extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
     id: {
@@ -11,22 +11,20 @@ export default class RefreshToken extends Model {
       primaryKey: true
     },
     refreshToken: {
-      type: DataTypes.STRING(140),
-      allowNull: true,
-      field: 'refresh_token'
+      type: DataTypes.STRING(255),
+      allowNull: true
     },
     userId: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       allowNull: true,
       references: {
         model: 'user',
         key: 'id'
-      },
-      field: 'user_id'
+      }
     }
   }, {
     sequelize,
-    tableName: 'refresh_token',
+    tableName: 'refreshtoken',
     timestamps: false,
     indexes: [
       {
@@ -38,10 +36,10 @@ export default class RefreshToken extends Model {
         ]
       },
       {
-        name: "fk_token_user_idx",
+        name: "userId",
         using: "BTREE",
         fields: [
-          { name: "user_id" },
+          { name: "userId" },
         ]
       },
     ]

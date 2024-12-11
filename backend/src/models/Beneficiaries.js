@@ -1,7 +1,7 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class Customer extends Model {
+export default class Beneficiaries extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
     id: {
@@ -10,38 +10,33 @@ export default class Customer extends Model {
       allowNull: false,
       primaryKey: true
     },
-    fullName: {
+    name: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    email: {
+    shortName: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    bankName: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    phone: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
-    otp: {
+    accountNumber: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    otpExpiredAt: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    userId: {
+    customerId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'user',
+        model: 'customer',
         key: 'id'
       }
     }
   }, {
     sequelize,
-    tableName: 'customer',
-    hasTrigger: true,
+    tableName: 'beneficiaries',
     timestamps: false,
     indexes: [
       {
@@ -53,10 +48,10 @@ export default class Customer extends Model {
         ]
       },
       {
-        name: "userId",
+        name: "customerId",
         using: "BTREE",
         fields: [
-          { name: "userId" },
+          { name: "customerId" },
         ]
       },
     ]

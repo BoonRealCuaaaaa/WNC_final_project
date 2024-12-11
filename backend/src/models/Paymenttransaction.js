@@ -1,7 +1,7 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class Customer extends Model {
+export default class Paymenttransaction extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
     id: {
@@ -10,16 +10,12 @@ export default class Customer extends Model {
       allowNull: false,
       primaryKey: true
     },
-    fullName: {
-      type: DataTypes.STRING(255),
+    amount: {
+      type: DataTypes.DECIMAL(15,2),
       allowNull: true
     },
-    email: {
+    content: {
       type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    phone: {
-      type: DataTypes.STRING(50),
       allowNull: true
     },
     otp: {
@@ -30,18 +26,29 @@ export default class Customer extends Model {
       type: DataTypes.DATE,
       allowNull: true
     },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'user',
-        key: 'id'
-      }
+    status: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    srcAccount: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    srcBankName: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    desAccount: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    bankName: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     }
   }, {
     sequelize,
-    tableName: 'customer',
-    hasTrigger: true,
+    tableName: 'paymenttransaction',
     timestamps: false,
     indexes: [
       {
@@ -50,13 +57,6 @@ export default class Customer extends Model {
         using: "BTREE",
         fields: [
           { name: "id" },
-        ]
-      },
-      {
-        name: "userId",
-        using: "BTREE",
-        fields: [
-          { name: "userId" },
         ]
       },
     ]
