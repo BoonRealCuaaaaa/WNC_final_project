@@ -1,38 +1,25 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class Customer extends Model {
+export default class Store extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
-    customerId: {
+    storeId: {
       autoIncrement: true,
-      type: DataTypes.SMALLINT.UNSIGNED,
+      type: DataTypes.TINYINT.UNSIGNED,
       allowNull: false,
       primaryKey: true,
-      field: 'customer_id'
+      field: 'store_id'
     },
-    storeId: {
+    managerStaffId: {
       type: DataTypes.TINYINT.UNSIGNED,
       allowNull: false,
       references: {
-        model: 'store',
-        key: 'store_id'
+        model: 'staff',
+        key: 'staff_id'
       },
-      field: 'store_id'
-    },
-    firstName: {
-      type: DataTypes.STRING(45),
-      allowNull: false,
-      field: 'first_name'
-    },
-    lastName: {
-      type: DataTypes.STRING(45),
-      allowNull: false,
-      field: 'last_name'
-    },
-    email: {
-      type: DataTypes.STRING(50),
-      allowNull: true
+      unique: "fk_store_staff",
+      field: 'manager_staff_id'
     },
     addressId: {
       type: DataTypes.SMALLINT.UNSIGNED,
@@ -43,16 +30,6 @@ export default class Customer extends Model {
       },
       field: 'address_id'
     },
-    active: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: 1
-    },
-    createDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      field: 'create_date'
-    },
     lastUpdate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -61,8 +38,7 @@ export default class Customer extends Model {
     }
   }, {
     sequelize,
-    tableName: 'customer',
-    hasTrigger: true,
+    tableName: 'store',
     timestamps: false,
     indexes: [
       {
@@ -70,14 +46,15 @@ export default class Customer extends Model {
         unique: true,
         using: "BTREE",
         fields: [
-          { name: "customer_id" },
+          { name: "store_id" },
         ]
       },
       {
-        name: "idx_fk_store_id",
+        name: "idx_unique_manager",
+        unique: true,
         using: "BTREE",
         fields: [
-          { name: "store_id" },
+          { name: "manager_staff_id" },
         ]
       },
       {
@@ -85,13 +62,6 @@ export default class Customer extends Model {
         using: "BTREE",
         fields: [
           { name: "address_id" },
-        ]
-      },
-      {
-        name: "idx_last_name",
-        using: "BTREE",
-        fields: [
-          { name: "last_name" },
         ]
       },
     ]

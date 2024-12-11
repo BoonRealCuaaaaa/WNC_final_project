@@ -1,24 +1,15 @@
 import _sequelize from 'sequelize';
 const { Model, Sequelize } = _sequelize;
 
-export default class Customer extends Model {
+export default class Staff extends Model {
   static init(sequelize, DataTypes) {
   return super.init({
-    customerId: {
+    staffId: {
       autoIncrement: true,
-      type: DataTypes.SMALLINT.UNSIGNED,
-      allowNull: false,
-      primaryKey: true,
-      field: 'customer_id'
-    },
-    storeId: {
       type: DataTypes.TINYINT.UNSIGNED,
       allowNull: false,
-      references: {
-        model: 'store',
-        key: 'store_id'
-      },
-      field: 'store_id'
+      primaryKey: true,
+      field: 'staff_id'
     },
     firstName: {
       type: DataTypes.STRING(45),
@@ -30,10 +21,6 @@ export default class Customer extends Model {
       allowNull: false,
       field: 'last_name'
     },
-    email: {
-      type: DataTypes.STRING(50),
-      allowNull: true
-    },
     addressId: {
       type: DataTypes.SMALLINT.UNSIGNED,
       allowNull: false,
@@ -43,15 +30,35 @@ export default class Customer extends Model {
       },
       field: 'address_id'
     },
+    picture: {
+      type: DataTypes.BLOB,
+      allowNull: true
+    },
+    email: {
+      type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    storeId: {
+      type: DataTypes.TINYINT.UNSIGNED,
+      allowNull: false,
+      references: {
+        model: 'store',
+        key: 'store_id'
+      },
+      field: 'store_id'
+    },
     active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: 1
     },
-    createDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      field: 'create_date'
+    username: {
+      type: DataTypes.STRING(16),
+      allowNull: false
+    },
+    password: {
+      type: DataTypes.STRING(40),
+      allowNull: true
     },
     lastUpdate: {
       type: DataTypes.DATE,
@@ -61,8 +68,7 @@ export default class Customer extends Model {
     }
   }, {
     sequelize,
-    tableName: 'customer',
-    hasTrigger: true,
+    tableName: 'staff',
     timestamps: false,
     indexes: [
       {
@@ -70,7 +76,7 @@ export default class Customer extends Model {
         unique: true,
         using: "BTREE",
         fields: [
-          { name: "customer_id" },
+          { name: "staff_id" },
         ]
       },
       {
@@ -85,13 +91,6 @@ export default class Customer extends Model {
         using: "BTREE",
         fields: [
           { name: "address_id" },
-        ]
-      },
-      {
-        name: "idx_last_name",
-        using: "BTREE",
-        fields: [
-          { name: "last_name" },
         ]
       },
     ]
