@@ -1,7 +1,7 @@
 import { Button } from "@/components/shared/button";
 import { Avatar, Input, Table, Tag, List, Modal } from "antd";
 import * as Form from "@radix-ui/react-form";
-import { PersonBadge, XLg } from "react-bootstrap-icons";
+import { PersonBadge, Search, XLg } from "react-bootstrap-icons";
 import { useState } from "react";
 import {
    AlertDialog,
@@ -60,6 +60,7 @@ const CreditorTable = () => {
       defaultValues: {
          debtorAccount: "",
          debtAmount: "",
+         debtName:"",
          content: "",
       },
    });
@@ -176,7 +177,7 @@ const CreditorTable = () => {
                <Form.Root className="w-full flex flex-col space-y-2">
                   <Form.Field name="debtor-account">
                      <Form.Label className="text-sm font-medium leading-8 ">
-                        Người nợ <span className="text-red-600 font-bold">*</span>
+                        Số tài khoản người nợ <span className="text-red-600 font-bold">*</span>
                      </Form.Label>
                      <div className="flex space-x-3 items-center">
                         <Form.Control asChild>
@@ -190,6 +191,10 @@ const CreditorTable = () => {
                               {...register("debtorAccount")}
                            />
                         </Form.Control>
+                        <div
+                           className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center">
+                           <Search className="text-lg" />
+                        </div>
                         <div
                            className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center"
                            onClick={() => {
@@ -205,7 +210,28 @@ const CreditorTable = () => {
                      </div>
                   </Form.Field>
                   <Form.Field name="template-description">
-                     <Form.Label className="text-base font-medium leading-8 ">
+                     <Form.Label className="text-sm font-medium leading-8 ">
+                        Tên người nợ <span className="text-red-600 font-bold">*</span>
+                     </Form.Label>
+                     <Form.Control asChild>
+                        <input
+                           className="h-9 w-full inline-flex justify-center items-center px-2 border border-gray-300 rounded-lg leading-none  "
+                           type="text"
+                           required
+                           placeholder="Nhập số tiền nợ"
+                           value={watch("debtName")}
+                           {...register("debtName")}
+                           disabled
+                        />
+                     </Form.Control>
+                     <div className="flex justify-between my-1">
+                        <Form.Message className="text-red-500 text-sm" match="valueMissing">
+                           Không được để trống
+                        </Form.Message>
+                     </div>
+                  </Form.Field>
+                  <Form.Field name="template-description">
+                     <Form.Label className="text-sm font-medium leading-8 ">
                         Số tiền nợ <span className="text-red-600 font-bold">*</span>
                      </Form.Label>
                      <Form.Control asChild>
@@ -225,7 +251,7 @@ const CreditorTable = () => {
                      </div>
                   </Form.Field>
                   <Form.Field name="template-template">
-                     <Form.Label className="text-base font-medium leading-8 ">
+                     <Form.Label className="text-sm font-medium leading-8 ">
                         Nội dung <span className="text-red-600 font-bold">*</span>
                      </Form.Label>
                      <Form.Control asChild>

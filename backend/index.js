@@ -2,6 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import authRouter from "./src/routes/auth.route.js";
+import customerRouter from "./src/routes/customer.route.js";
+import debitRouter from "./src/routes/debit.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 
 const app = express();
@@ -11,6 +13,8 @@ app.use(cors());
 const port = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
+app.use("/customer", verifyToken, customerRouter);
+app.use("/debits",verifyToken, debitRouter);
 
 // Example of protected API
 let cnt = 0;
