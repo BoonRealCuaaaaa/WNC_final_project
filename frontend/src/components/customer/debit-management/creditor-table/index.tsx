@@ -16,33 +16,9 @@ import {
 } from "@/components/shared/alert-dialog";
 import { useForm } from "react-hook-form";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
-
-const data = [
-   {
-      key: "1",
-      name: "Nguyễn Văn A",
-      accountNumber: "1234-5678-9012-3456",
-      amount: 170000,
-      status: "Chưa thanh toán",
-      description: "Đây là một nhắc nợ được tạo bởi tôi, đây là mô tả siêu siêu dài...",
-   },
-   {
-      key: "2",
-      name: "Nguyễn Văn B",
-      accountNumber: "9876-5432-1098-7654",
-      amount: 200000,
-      status: "Đã thanh toán",
-      description: "Đây là một nhắc nợ khác.",
-   },
-   {
-      key: "3",
-      name: "Nguyễn Văn C",
-      accountNumber: "1357-2468-1357-2468",
-      amount: 150000,
-      status: "Chưa thanh toán",
-      description: "Mô tả khác.",
-   },
-];
+import { createDebitApi, getCreatedDebitApi } from "@/api/debits.api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 const beneficiaries = [
    { id: 1, name: "Nguyễn Văn A", account: "1234-5678-91" },
@@ -55,21 +31,48 @@ const CreditorTable = () => {
    const [selectedPerson, setSelectedPerson] = useState(null);
    const [isOpenBeneficiaryModal, setIsOpenBeneficiaryModal] = useState(false);
    const [searchText, setSearchText] = useState("");
+   const { toast } = useToast();
 
-   const { register, watch, setValue } = useForm({
+   const { mutate: createDebit } = useMutation({
+      mutationFn: createDebitApi,
+      onSuccess: () => {
+         setIsCreateModalVisible(false);
+         toast({
+            title: "Tạo nhắc nợ thành công",
+            description: "Bạn đã tạo nhắc nợ thành công",
+         });
+         reFetchDebits();
+      },
+   });
+
+   const {
+      data: debits,
+      isLoading: isFetchingDebits,
+      refetch: reFetchDebits,
+   } = useQuery({
+      queryKey: ["debit-creditor"],
+      queryFn: getCreatedDebitApi,
+   });
+
+   const { register, watch, handleSubmit, setValue } = useForm({
       defaultValues: {
          debtorAccount: "",
          debtAmount: "",
-         debtName:"",
+         debtName: "",
          content: "",
       },
    });
 
+   const onCreateDebit = (data) => {
+      const { debtorAccount, debtAmount, content } = data;
+      createDebit({ accountNumber: debtorAccount, amount: debtAmount, content });
+   };
+
    const columns = [
       {
          title: "Người nợ",
-         dataIndex: "name",
-         key: "name",
+         dataIndex: "fullName",
+         key: "fullName",
          render: (_, record) => (
             <div className="flex space-x-3 items-center">
                <Avatar
@@ -77,10 +80,10 @@ const CreditorTable = () => {
                      backgroundColor: "orange",
                      verticalAlign: "middle",
                   }}>
-                  {record.name.charAt(0)}
+                  {record.fullName.charAt(0)}
                </Avatar>
                <div>
-                  <div>{record.name}</div>
+                  <div>{record.fullName}</div>
                   <div style={{ color: "gray", fontSize: "12px" }}>{record.accountNumber}</div>
                </div>
             </div>
@@ -112,8 +115,8 @@ const CreditorTable = () => {
       },
       {
          title: "Mô tả",
-         dataIndex: "description",
-         key: "description",
+         dataIndex: "content",
+         key: "content",
          ellipsis: true,
       },
       {
@@ -131,7 +134,7 @@ const CreditorTable = () => {
                      <AlertDialogTitle>Hủy nhắc nợ </AlertDialogTitle>
                      <AlertDialogDescription asChild>
                         <div className="flex flex-col space-y-5">
-                           <div>{`Bạn có chắc chắn muốn hủy nhắc nợ với ${record.name} không?`}</div>
+                           <div>{`Bạn có chắc chắn muốn hủy nhắc nợ với ${record.fullName} không?`}</div>
                            <textarea
                               className=" border border-gray-300 inline-flex  h-20 w-full resize-none appearance-none items-center justify-center rounded-lg  p-2.5 text-[15px] leading-none outline-none focus:shadow-[0_0_0_2px_black]"
                               required
@@ -154,12 +157,14 @@ const CreditorTable = () => {
       setSelectedPerson(person);
    };
 
+   if (isFetchingDebits) return <div>Loading...</div>;
+
    return (
       <div className="w-full border rounded-lg flex flex-col p-4 space-y-5">
          <div className="flex flex-row justify-between items-center">
             <div>
                <p className="font-semibold">Danh sách nhắc nợ do bạn tạo</p>
-               <p className="text-primary-gray">{data.length} nhắc nợ</p>
+               <p className="text-primary-gray">{debits.data.length} nhắc nợ</p>
             </div>
             <Button
                onClick={() => {
@@ -174,7 +179,7 @@ const CreditorTable = () => {
                   setIsCreateModalVisible(false);
                }}
                footer={null}>
-               <Form.Root className="w-full flex flex-col space-y-2">
+               <Form.Root className="w-full flex flex-col space-y-2" onSubmit={handleSubmit(onCreateDebit)}>
                   <Form.Field name="debtor-account">
                      <Form.Label className="text-sm font-medium leading-8 ">
                         Số tài khoản người nợ <span className="text-red-600 font-bold">*</span>
@@ -191,8 +196,7 @@ const CreditorTable = () => {
                               {...register("debtorAccount")}
                            />
                         </Form.Control>
-                        <div
-                           className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center">
+                        <div className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center">
                            <Search className="text-lg" />
                         </div>
                         <div
@@ -316,7 +320,9 @@ const CreditorTable = () => {
          />
          <Table
             columns={columns}
-            dataSource={data.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()))}
+            dataSource={debits.data
+               .filter((item) => item?.fullName?.toLowerCase().includes(searchText.toLowerCase()))
+               .map((item) => ({ ...item, key: item.id }))}
          />
       </div>
    );
