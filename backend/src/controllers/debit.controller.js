@@ -12,6 +12,10 @@ export const createDebit = async (req, res) => {
       return res.status(404).json({ message: "Creditor not found" });
    }
 
+   if (!debtorAccount) {
+      return res.status(404).json({ message: "Debtor not found" });
+   }
+
    const debitEntity = await models.Debits.create({
       amount: amount,
       content: content,
