@@ -76,7 +76,14 @@ CREATE TABLE Partners (
   ourPublicKey TEXT
 );
 
-
+CREATE TABLE Notification (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255),
+  message TEXT,
+  isRead BOOLEAN DEFAULT FALSE,
+  customerId INT,
+  FOREIGN KEY (customerId) REFERENCES Customer(id)
+);
 
 -- Dữ liệu mẫu cho bảng User
 INSERT INTO `User` (`username`, `password`, `role`)

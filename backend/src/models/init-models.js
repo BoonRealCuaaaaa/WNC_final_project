@@ -3,6 +3,7 @@ const DataTypes = _sequelize.DataTypes;
 import _Beneficiaries from  "./Beneficiaries.js";
 import _Customer from  "./Customer.js";
 import _Debits from  "./Debits.js";
+import _Notification from  "./Notification.js";
 import _Partners from  "./Partners.js";
 import _Paymentaccount from  "./Paymentaccount.js";
 import _Paymenttransaction from  "./Paymenttransaction.js";
@@ -13,6 +14,7 @@ export default function initModels(sequelize) {
   const Beneficiaries = _Beneficiaries.init(sequelize, DataTypes);
   const Customer = _Customer.init(sequelize, DataTypes);
   const Debits = _Debits.init(sequelize, DataTypes);
+  const Notification = _Notification.init(sequelize, DataTypes);
   const Partners = _Partners.init(sequelize, DataTypes);
   const Paymentaccount = _Paymentaccount.init(sequelize, DataTypes);
   const Paymenttransaction = _Paymenttransaction.init(sequelize, DataTypes);
@@ -25,6 +27,8 @@ export default function initModels(sequelize) {
   Customer.hasMany(Debits, { as: "debits", foreignKey: "creditor"});
   Debits.belongsTo(Customer, { as: "debtorCustomer", foreignKey: "debtor"});
   Customer.hasMany(Debits, { as: "debtorDebits", foreignKey: "debtor"});
+  Notification.belongsTo(Customer, { as: "customer", foreignKey: "customerId"});
+  Customer.hasMany(Notification, { as: "notifications", foreignKey: "customerId"});
   Paymentaccount.belongsTo(Customer, { as: "customer", foreignKey: "customerId"});
   Customer.hasMany(Paymentaccount, { as: "paymentaccounts", foreignKey: "customerId"});
   Debits.belongsTo(Paymenttransaction, { as: "paymentTransaction", foreignKey: "paymentTransactionsId"});
@@ -38,6 +42,7 @@ export default function initModels(sequelize) {
     Beneficiaries,
     Customer,
     Debits,
+    Notification,
     Partners,
     Paymentaccount,
     Paymenttransaction,
