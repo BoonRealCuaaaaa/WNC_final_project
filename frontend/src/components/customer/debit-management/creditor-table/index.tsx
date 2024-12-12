@@ -19,12 +19,8 @@ import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import { createDebitApi, getCreatedDebitApi } from "@/api/debits.api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-
-const beneficiaries = [
-   { id: 1, name: "Nguyễn Văn A", account: "1234-5678-91" },
-   { id: 2, name: "Trần Thị B", account: "9876-5432-1098-7654" },
-   { id: 3, name: "Lê Văn C", account: "1357-2468-1357-2468" },
-];
+import { checkExistApi } from "@/api/customer.api";
+import { getBeneficiariesApi } from "@/api/beneficiaries.api";
 
 const CreditorTable = () => {
    const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -45,6 +41,25 @@ const CreditorTable = () => {
       },
    });
 
+   const { mutate: checkExist } = useMutation({
+      mutationFn: checkExistApi,
+      onSuccess: (response) => {
+         console.log(response);
+         setValue("debtName", response.data.fullName);
+         toast({
+            title: "Tìm kiếm thành công",
+            description: "Số tài khoản hợp lệ",
+         });
+      },
+      onError: () => {
+         toast({
+            title: "Tìm kiếm thất bại",
+            description: "Số tài khoản không hợp lệ",
+            variant: "destructive",
+         });
+      },
+   });
+
    const {
       data: debits,
       isLoading: isFetchingDebits,
@@ -53,6 +68,12 @@ const CreditorTable = () => {
       queryKey: ["debit-creditor"],
       queryFn: getCreatedDebitApi,
    });
+
+   const { data: beneficiaries } = useQuery({
+      queryKey: ["beneficiaries"],
+      queryFn: getBeneficiariesApi,
+   });
+
 
    const { register, watch, handleSubmit, setValue } = useForm({
       defaultValues: {
@@ -66,6 +87,12 @@ const CreditorTable = () => {
    const onCreateDebit = (data) => {
       const { debtorAccount, debtAmount, content } = data;
       createDebit({ accountNumber: debtorAccount, amount: debtAmount, content });
+   };
+
+   const onSearchDebtor = (event) => {
+      event.preventDefault();
+      const accountNumber = watch("debtorAccount");
+      checkExist(accountNumber);
    };
 
    const columns = [
@@ -196,9 +223,11 @@ const CreditorTable = () => {
                               {...register("debtorAccount")}
                            />
                         </Form.Control>
-                        <div className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center">
+                        <button
+                           className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center"
+                           onClick={onSearchDebtor}>
                            <Search className="text-lg" />
-                        </div>
+                        </button>
                         <div
                            className="border p-2 rounded-lg hover:border-gray-400 w-12 flex justify-center"
                            onClick={() => {
@@ -291,19 +320,20 @@ const CreditorTable = () => {
                }}>
                <List
                   itemLayout="horizontal"
-                  dataSource={beneficiaries}
-                  renderItem={(item) => (
+                  dataSource={beneficiaries.data}
+                  renderItem={(item: { id: number; name: string; accountNumber: string }) => (
                      <List.Item
                         onClick={() => {
                            handleSelect(item);
-                           setValue("debtorAccount", item.account);
+                           setValue("debtorAccount", item.accountNumber);
+                           setValue("debtName", item.name);
                            setIsOpenBeneficiaryModal(false);
                         }}
                         className={`cursor-pointer ${selectedPerson?.id === item.id ? "bg-gray-100" : ""}`}>
                         <List.Item.Meta
                            avatar={<Avatar size="large">{item.name.charAt(0)}</Avatar>}
                            title={item.name}
-                           description={item.account}
+                           description={item.accountNumber}
                         />
                      </List.Item>
                   )}
