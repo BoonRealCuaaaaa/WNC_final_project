@@ -16,7 +16,7 @@ import {
 } from "@/components/shared/alert-dialog";
 import { useForm } from "react-hook-form";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
-import { createDebitApi, getCreatedDebitApi } from "@/api/debits.api";
+import { cancelDebitApi, createDebitApi, getCreatedDebitApi } from "@/api/debits.api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { checkExistApi } from "@/api/customer.api";
@@ -74,6 +74,17 @@ const CreditorTable = () => {
       queryFn: getBeneficiariesApi,
    });
 
+   const { mutate: cancelDebit } = useMutation({
+      mutationFn: cancelDebitApi,
+      onSuccess: () => {
+         reFetchDebits();
+         setValueCancel("cancelReason", "");
+         toast({
+            title: "Hủy nhắc nợ thành công",
+            description: "Bạn đã hủy nhắc nợ thành công",
+         });
+      },
+   });
 
    const { register, watch, handleSubmit, setValue } = useForm({
       defaultValues: {
@@ -81,6 +92,17 @@ const CreditorTable = () => {
          debtAmount: "",
          debtName: "",
          content: "",
+      },
+   });
+
+   const {
+      register: registerCancel,
+      handleSubmit: handleSubmitCancel,
+      setValue: setValueCancel,
+   } = useForm({
+      defaultValues: {
+         id: "",
+         cancelReason: "",
       },
    });
 
@@ -93,6 +115,10 @@ const CreditorTable = () => {
       event.preventDefault();
       const accountNumber = watch("debtorAccount");
       checkExist(accountNumber);
+   };
+
+   const onDeleteDebit = (data) => {
+      cancelDebit({ debitId: data.id, cancelReason: data.cancelReason });
    };
 
    const columns = [
@@ -149,34 +175,40 @@ const CreditorTable = () => {
       {
          title: "Hành động",
          key: "action",
-         render: (_, record) => (
-            <AlertDialog>
-               <AlertDialogTrigger asChild>
-                  <Button variant="ghost">
-                     <XLg />
-                  </Button>
-               </AlertDialogTrigger>
-               <AlertDialogContent>
-                  <AlertDialogHeader>
-                     <AlertDialogTitle>Hủy nhắc nợ </AlertDialogTitle>
-                     <AlertDialogDescription asChild>
-                        <div className="flex flex-col space-y-5">
-                           <div>{`Bạn có chắc chắn muốn hủy nhắc nợ với ${record.fullName} không?`}</div>
-                           <textarea
-                              className=" border border-gray-300 inline-flex  h-20 w-full resize-none appearance-none items-center justify-center rounded-lg  p-2.5 text-[15px] leading-none outline-none focus:shadow-[0_0_0_2px_black]"
-                              required
-                              placeholder="Nhập lý do nhắc nợ"
-                           />
-                        </div>
-                     </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                     <AlertDialogAction>Continue</AlertDialogAction>
-                  </AlertDialogFooter>
-               </AlertDialogContent>
-            </AlertDialog>
-         ),
+         render: (_, record) =>
+            record.status === "Chưa thanh toán" && (
+               <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                     <Button variant="ghost">
+                        <XLg />
+                     </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                     <AlertDialogHeader>
+                        <AlertDialogTitle>Hủy nhắc nợ </AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                           <form onSubmit={handleSubmitCancel((data) => onDeleteDebit({ ...data, id: record.id }))}>
+                              <div className="flex flex-col space-y-5">
+                                 <div>{`Bạn có chắc chắn muốn hủy nhắc nợ với ${record.fullName} không?`}</div>
+                                 <textarea
+                                    className="border border-gray-300 inline-flex h-20 w-full resize-none appearance-none items-center justify-center rounded-lg p-2.5 text-[15px] leading-none outline-none focus:shadow-[0_0_0_2px_black]"
+                                    required
+                                    placeholder="Nhập lý do nhắc nợ"
+                                    {...registerCancel("cancelReason")}
+                                 />
+                              </div>
+                              <AlertDialogFooter className="mt-5">
+                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                 <AlertDialogAction asChild>
+                                    <button type="submit">Continue</button>
+                                 </AlertDialogAction>
+                              </AlertDialogFooter>
+                           </form>
+                        </AlertDialogDescription>
+                     </AlertDialogHeader>
+                  </AlertDialogContent>
+               </AlertDialog>
+            ),
       },
    ];
 
@@ -320,7 +352,7 @@ const CreditorTable = () => {
                }}>
                <List
                   itemLayout="horizontal"
-                  dataSource={beneficiaries.data}
+                  dataSource={beneficiaries?.data}
                   renderItem={(item: { id: number; name: string; accountNumber: string }) => (
                      <List.Item
                         onClick={() => {
