@@ -70,3 +70,19 @@ export const getReceivedDebit = async (req, res) => {
 
    return res.status(200).json(flattenedDebits);
 };
+
+export const cancelDebit = async (req, res) => {
+   const { id, reason } = req.body;
+   console.log(id, reason)
+
+   const debit = await models.Debits.findOne({ where: { id: id } });
+
+   if (!debit) {
+      return res.status(404).json({ message: "Debit not found" });
+   }
+   debit.status = "Đã hủy";
+   debit.cancelReason = reason;
+   await debit.save();
+
+   return res.status(200).json({ message: "Debit canceled" });
+};
