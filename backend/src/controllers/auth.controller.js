@@ -1,7 +1,7 @@
 import { models } from "../lib/utils/database/index.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import dotenv from "dotenv";
+import 'dotenv/config';
 
 export const login = async (req, res) => {
    const { username, password } = req.body;

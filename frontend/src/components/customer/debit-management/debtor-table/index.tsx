@@ -4,7 +4,6 @@ import { CheckSquare, XLg } from "react-bootstrap-icons";
 
 import {
    AlertDialog,
-   AlertDialogAction,
    AlertDialogCancel,
    AlertDialogContent,
    AlertDialogDescription,
@@ -15,13 +14,16 @@ import {
 } from "@/components/shared/alert-dialog";
 import { useState } from "react";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
-import { generateDebitOtpApi, getReceivedDebitApi, payDebitApi } from "@/api/debits.api";
+import { cancelDebitApi, generateDebitOtpApi, getReceivedDebitApi, payDebitApi } from "@/api/debits.api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
 
 const DebtorTable = () => {
    const { toast } = useToast();
    const [otp, setOtp] = useState("");
+   const [openPaymentModal, setOpenPaymentModal] = useState(false);
+   const [openCancelModal, setOpenCancelModal] = useState(false);
    const {
       data: debits,
       isLoading: isFetchingDebits,
@@ -41,6 +43,7 @@ const DebtorTable = () => {
             title: "Thanh toán nợ thành công",
             description: "Bạn đã thanh toán nợ thành công",
          });
+         setOpenPaymentModal(false);
       },
       onError: () => {
          toast({
@@ -51,6 +54,33 @@ const DebtorTable = () => {
       },
    });
 
+   const { mutate: cancelDebit } = useMutation({
+      mutationFn: cancelDebitApi,
+      onSuccess: () => {
+         refetchDebits();
+         setValueCancel("cancelReason", "");
+         toast({
+            title: "Hủy nhắc nợ thành công",
+            description: "Bạn đã hủy nhắc nợ thành công",
+         });
+      },
+   });
+
+   const {
+      register: registerCancel,
+      handleSubmit: handleSubmitCancel,
+      setValue: setValueCancel,
+   } = useForm({
+      defaultValues: {
+         id: "",
+         cancelReason: "",
+      },
+   });
+
+   const onDeleteDebit = (data) => {
+      cancelDebit({ debitId: data.id, cancelReason: data.cancelReason });
+   };
+
    const [currentStep, setCurrentStep] = useState(0);
 
    const handlePayDebit = (debitId) => {
@@ -60,6 +90,7 @@ const DebtorTable = () => {
             description: "Vui lòng nhập đủ 6 số OTP",
             variant: "destructive",
          });
+         return;
       }
 
       payDebit({ debitId, otp });
@@ -122,7 +153,7 @@ const DebtorTable = () => {
          render: (_, record) =>
             record.status == "Chưa thanh toán" && (
                <div className="flex justify-start">
-                  <AlertDialog>
+                  <AlertDialog open={openPaymentModal} onOpenChange={setOpenPaymentModal}>
                      <AlertDialogTrigger asChild>
                         <Button variant="ghost" className="p-0">
                            <CheckSquare />
@@ -181,18 +212,18 @@ const DebtorTable = () => {
                                  Tiếp tục
                               </Button>
                            ) : (
-                              <AlertDialogAction
+                              <Button
                                  onClick={() => {
                                     handlePayDebit(record.id);
                                  }}>
                                  Hoàn tất
-                              </AlertDialogAction>
+                              </Button>
                            )}
                         </AlertDialogFooter>
                      </AlertDialogContent>
                   </AlertDialog>
 
-                  <AlertDialog>
+                  <AlertDialog open={openCancelModal} onOpenChange={setOpenCancelModal}>
                      <AlertDialogTrigger asChild>
                         <Button variant="ghost">
                            <XLg />
@@ -200,24 +231,25 @@ const DebtorTable = () => {
                      </AlertDialogTrigger>
                      <AlertDialogContent>
                         <AlertDialogHeader>
-                           <AlertDialogTitle>
-                              <span>Hủy nhắc nợ</span>
-                           </AlertDialogTitle>
+                           <AlertDialogTitle>Hủy nhắc nợ </AlertDialogTitle>
                            <AlertDialogDescription asChild>
-                              <div className="flex flex-col space-y-5">
-                                 <div>{`Bạn có chắc chắn muốn hủy nợ với ${record.fullName} không?`}</div>
-                                 <textarea
-                                    className=" border border-gray-300 inline-flex  h-20 w-full resize-none appearance-none items-center justify-center rounded-lg  p-2.5 text-[15px] leading-none outline-none focus:shadow-[0_0_0_2px_black]"
-                                    required
-                                    placeholder="Nhập lý do hủy nợ"
-                                 />
-                              </div>
+                              <form onSubmit={handleSubmitCancel((data) => onDeleteDebit({ ...data, id: record.id }))}>
+                                 <div className="flex flex-col space-y-5">
+                                    <div>{`Bạn có chắc chắn muốn hủy nhắc nợ với ${record.fullName} không?`}</div>
+                                    <textarea
+                                       className="border border-gray-300 inline-flex h-20 w-full resize-none appearance-none items-center justify-center rounded-lg p-2.5 text-[15px] leading-none outline-none focus:shadow-[0_0_0_2px_black]"
+                                       required
+                                       placeholder="Nhập lý do nhắc nợ"
+                                       {...registerCancel("cancelReason")}
+                                    />
+                                 </div>
+                                 <AlertDialogFooter className="mt-5">
+                                    <AlertDialogCancel>Trở về</AlertDialogCancel>
+                                    <Button type="submit">Hủy nhác nợ</Button>
+                                 </AlertDialogFooter>
+                              </form>
                            </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter>
-                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                           <AlertDialogAction>Continue</AlertDialogAction>
-                        </AlertDialogFooter>
                      </AlertDialogContent>
                   </AlertDialog>
                </div>

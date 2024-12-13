@@ -1,6 +1,7 @@
 import { models } from "../lib/utils/database/index.js";
 import { generateOTP } from "../lib/utils/otp/index.js";
 import Decimal from "decimal.js";
+import { sendNotification } from "../services/socket.js";
 
 export const generateOtpForDebit = async (req, res) => {
    const { debitId } = req.body;
@@ -84,6 +85,14 @@ export const payDebit = async (req, res) => {
    creditorPaymentAccount.save();
    debit.save();
    paymentTransaction.save();
+
+   const notification = await models.Notification.create({
+      title: "Đã thanh toán nợ",
+      message: `${debtor.fullName} đã thanh toán nợ cho bạn với số tiền ${amount.toString()}`,
+      customerId: debit.creditor,
+      isRead: false,
+   });
+   sendNotification(creditor.id, notification);
 
    return res.status(200).json({ message: "Debit paid" });
 };

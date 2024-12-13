@@ -37,7 +37,7 @@ export default class Beneficiaries extends Model {
   }, {
     sequelize,
     tableName: 'beneficiaries',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

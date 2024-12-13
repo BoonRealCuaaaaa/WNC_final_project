@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import 'dotenv/config';
 import { models } from "../lib/utils/database/index.js";
 
 export const validateExistCustomer = async (req, res) => {

@@ -33,7 +33,7 @@ export default class Partners extends Model {
   }, {
     sequelize,
     tableName: 'partners',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

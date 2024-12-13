@@ -1,7 +1,8 @@
 import { models } from "../lib/utils/database/index.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import dotenv from "dotenv";
+import "dotenv/config";
+import { sendNotification } from "../services/socket.js";
 
 export const createDebit = async (req, res) => {
    const { accountNumber, amount, content } = req.body;
@@ -73,7 +74,9 @@ export const getReceivedDebit = async (req, res) => {
 
 export const cancelDebit = async (req, res) => {
    const { id, reason } = req.body;
-   console.log(id, reason)
+   const user = req.user;
+
+   const currentCustomer = await models.Customer.findOne({ where: { userId: user.id } });
 
    const debit = await models.Debits.findOne({ where: { id: id } });
 
@@ -83,6 +86,26 @@ export const cancelDebit = async (req, res) => {
    debit.status = "Đã hủy";
    debit.cancelReason = reason;
    await debit.save();
+
+   if (currentCustomer.id == debit.debtor) {
+      const notification = await models.Notification.create({
+         title: "Debit canceled",
+         message: `Debit ${debit.id} has been canceled`,
+         customerId: debit.creditor,
+         isRead: false,
+      });
+
+      sendNotification(debit.creditor, notification);
+   } else {
+      const notification = await models.Notification.create({
+         title: "Debit canceled",
+         message: `Debit ${debit.id} has been canceled`,
+         customerId: debit.debtor,
+         isRead: false,
+      });
+      
+      sendNotification(debit.debtor, notification);
+   }
 
    return res.status(200).json({ message: "Debit canceled" });
 };

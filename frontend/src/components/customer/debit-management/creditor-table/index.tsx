@@ -5,7 +5,6 @@ import { PersonBadge, Search, XLg } from "react-bootstrap-icons";
 import { useState } from "react";
 import {
    AlertDialog,
-   AlertDialogAction,
    AlertDialogCancel,
    AlertDialogContent,
    AlertDialogDescription,
@@ -24,6 +23,7 @@ import { getBeneficiariesApi } from "@/api/beneficiaries.api";
 
 const CreditorTable = () => {
    const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+   const [openCancelModal, setOpenCancelModal] = useState(false);
    const [selectedPerson, setSelectedPerson] = useState(null);
    const [isOpenBeneficiaryModal, setIsOpenBeneficiaryModal] = useState(false);
    const [searchText, setSearchText] = useState("");
@@ -78,6 +78,7 @@ const CreditorTable = () => {
       mutationFn: cancelDebitApi,
       onSuccess: () => {
          reFetchDebits();
+         setOpenCancelModal(false);
          setValueCancel("cancelReason", "");
          toast({
             title: "Hủy nhắc nợ thành công",
@@ -177,7 +178,7 @@ const CreditorTable = () => {
          key: "action",
          render: (_, record) =>
             record.status === "Chưa thanh toán" && (
-               <AlertDialog>
+               <AlertDialog open={openCancelModal} onOpenChange={setOpenCancelModal}>
                   <AlertDialogTrigger asChild>
                      <Button variant="ghost">
                         <XLg />
@@ -198,10 +199,8 @@ const CreditorTable = () => {
                                  />
                               </div>
                               <AlertDialogFooter className="mt-5">
-                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                 <AlertDialogAction asChild>
-                                    <button type="submit">Continue</button>
-                                 </AlertDialogAction>
+                                 <AlertDialogCancel>Trở về</AlertDialogCancel>
+                                 <Button type="submit">Hủy nhác nợ</Button>
                               </AlertDialogFooter>
                            </form>
                         </AlertDialogDescription>

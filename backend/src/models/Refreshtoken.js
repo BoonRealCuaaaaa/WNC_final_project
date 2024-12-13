@@ -25,7 +25,7 @@ export default class Refreshtoken extends Model {
   }, {
     sequelize,
     tableName: 'refreshtoken',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

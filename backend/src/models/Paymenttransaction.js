@@ -49,7 +49,7 @@ export default class Paymenttransaction extends Model {
   }, {
     sequelize,
     tableName: 'paymenttransaction',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",
