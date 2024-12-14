@@ -29,7 +29,7 @@ export default class Paymentaccount extends Model {
   }, {
     sequelize,
     tableName: 'paymentaccount',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

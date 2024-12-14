@@ -1,7 +1,7 @@
 import { models } from "../lib/utils/database/index.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import dotenv from "dotenv";
+import 'dotenv/config';
 
 export const login = async (req, res) => {
    const { username, password } = req.body;
@@ -17,7 +17,7 @@ export const login = async (req, res) => {
    }
 
    const payload = { id: user.id, username: user.username, role: user.role };
-   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN, { expiresIn: "10s" });
+   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN, { expiresIn: "2h" });
    let refreshToken = await models.Refreshtoken.findOne({ where: { userId: user.id } });
 
    if (!refreshToken) {

@@ -2,14 +2,18 @@ CREATE TABLE User (
   id INT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(255),
   password VARCHAR(255),
-  role ENUM ('CUSTOMER', 'TELLER', 'ADMIN')
+  role ENUM ('CUSTOMER', 'TELLER', 'ADMIN'),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE RefreshToken (
   id INT PRIMARY KEY AUTO_INCREMENT,
   refreshToken VARCHAR(255),
   userId INT,
-  FOREIGN KEY (userId) REFERENCES User(id)
+  FOREIGN KEY (userId) REFERENCES User(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Customer (
@@ -20,7 +24,9 @@ CREATE TABLE Customer (
   otp VARCHAR(255),
   otpExpiredAt DATETIME,
   userId INT,
-  FOREIGN KEY (userId) REFERENCES User(id)
+  FOREIGN KEY (userId) REFERENCES User(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE PaymentAccount (
@@ -28,7 +34,9 @@ CREATE TABLE PaymentAccount (
   accountNumber VARCHAR(255),
   balance DECIMAL(15, 2),
   customerId INT,
-  FOREIGN KEY (customerId) REFERENCES Customer(id)
+  FOREIGN KEY (customerId) REFERENCES Customer(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Beneficiaries (
@@ -38,7 +46,9 @@ CREATE TABLE Beneficiaries (
   bankName VARCHAR(255),
   accountNumber VARCHAR(255),
   customerId INT,
-  FOREIGN KEY (customerId) REFERENCES Customer(id)
+  FOREIGN KEY (customerId) REFERENCES Customer(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE PaymentTransaction (
@@ -51,7 +61,9 @@ CREATE TABLE PaymentTransaction (
   srcAccount VARCHAR(255),
   srcBankName VARCHAR(255),
   desAccount VARCHAR(255),
-  bankName VARCHAR(255)
+  desBankName VARCHAR(255),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Debits (
@@ -59,12 +71,15 @@ CREATE TABLE Debits (
   amount DECIMAL(15, 2),
   content VARCHAR(255),
   status VARCHAR(50),
+  cancelReason VARCHAR(255),
   paymentTransactionsId INT,
   creditor INT,
   debtor INT,
   FOREIGN KEY (paymentTransactionsId) REFERENCES PaymentTransaction(id),
   FOREIGN KEY (creditor) REFERENCES Customer(id),
-  FOREIGN KEY (debtor) REFERENCES Customer(id)
+  FOREIGN KEY (debtor) REFERENCES Customer(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Partners (
@@ -73,7 +88,9 @@ CREATE TABLE Partners (
   domain VARCHAR(255),
   partenerPublicKey TEXT,
   ourPrivateKey TEXT,
-  ourPublicKey TEXT
+  ourPublicKey TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Notification (
@@ -82,7 +99,9 @@ CREATE TABLE Notification (
   message TEXT,
   isRead BOOLEAN DEFAULT FALSE,
   customerId INT,
-  FOREIGN KEY (customerId) REFERENCES Customer(id)
+  FOREIGN KEY (customerId) REFERENCES Customer(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Dữ liệu mẫu cho bảng User
@@ -98,20 +117,21 @@ VALUES
   ('lucy_black', 'password123', 'CUSTOMER'),
   ('susan_green', 'password123', 'CUSTOMER'),
   ('boon_real','password123','CUSTOMER'),
-  ('david_yellow', 'password123', 'CUSTOMER');
+  ('david_yellow', 'password123', 'CUSTOMER'),
+  ('boonreal', 'password123', 'CUSTOMER');
 
 -- Dữ liệu mẫu cho bảng Customer (otp và otpExpiredAt để trống)
 INSERT INTO `Customer` (`fullName`, `email`, `phone`, `otp`, `otpExpiredAt`, `userId`)
 VALUES
   ('John Doe', 'john.doe@example.com', '012-345-6789', NULL, NULL, 1),
-  ('Jane Smith', 'jane.smith@example.com', '098-765-4321', NULL, NULL, 4),
-  ('Mike Williams', 'mike.williams@example.com', '011-223-3445', NULL, NULL, 5),
-  ('Emily Jones', 'emily.jones@example.com', '022-334-4556', NULL, NULL, 6),
-  ('Lisa White', 'lisa.white@example.com', '033-445-5667', NULL, NULL, 7),
-  ('Tom Brown', 'tom.brown@example.com', '044-556-6778', NULL, NULL, 8),
-  ('Lucy Black', 'lucy.black@example.com', '055-667-7889', NULL, NULL, 9),
-  ('Susan Green', 'susan.green@example.com', '066-778-8990', NULL, NULL, 10),
-  ('David Yellow', 'david.yellow@example.com', '077-889-9001', NULL, NULL, 11);
+  ('Mike Williams', 'mike.williams@example.com', '011-223-3445', NULL, NULL, 4),
+  ('Emily Jones', 'emily.jones@example.com', '022-334-4556', NULL, NULL, 5),
+  ('Lisa White', 'lisa.white@example.com', '033-445-5667', NULL, NULL, 6),
+  ('Tom Brown', 'tom.brown@example.com', '044-556-6778', NULL, NULL, 7),
+  ('Lucy Black', 'lucy.black@example.com', '055-667-7889', NULL, NULL, 8),
+  ('Susan Green', 'susan.green@example.com', '066-778-8990', NULL, NULL, 9),
+  ('David Yellow', 'david.yellow@example.com', '077-889-9001', NULL, NULL, 10),
+  ('Boon Real', 'boonreal@example.com','111-222-3333',NULL,NULL,11);
 
 -- Dữ liệu mẫu cho bảng PaymentAccount (thêm dấu gạch ngang vào accountNumber)
 INSERT INTO `PaymentAccount` (`accountNumber`, `balance`, `customerId`)
@@ -136,27 +156,26 @@ VALUES
   ('Grace Yellow', 'Grace', 'BANK A', '777-000-7777', 9);
 
 -- Dữ liệu mẫu cho bảng PaymentTransaction (status dùng tiếng Việt)
-INSERT INTO `PaymentTransaction` (`amount`, `content`, `otp`, `otpExpiredAt`, `status`, `srcAccount`, `srcBankName`, `desAccount`, `bankName`)
+INSERT INTO `PaymentTransaction` (`amount`, `content`, `otp`, `otpExpiredAt`, `status`, `srcAccount`, `srcBankName`, `desAccount`, `desBankName`)
 VALUES
   (1000.00, 'Thanh toán dịch vụ', '123456', '2024-12-12 12:00:00', 'ĐANG XỬ LÝ', '123-456-789-012', 'Bank A', '987-000-9876', 'Bank B'),
   (500.00, 'Thanh toán hàng hóa', '654321', '2024-12-12 13:00:00', 'HOÀN THÀNH', '987-654-321-098', 'Bank B', '123-000-1234', 'Bank A'),
   (1500.00, 'Thanh toán hóa đơn', '234567', '2024-12-12 14:00:00', 'ĐANG XỬ LÝ', '112-233-445-566', 'Bank C', '333-000-3333', 'Bank C'),
   (2000.00, 'Thanh toán cho đối tác', '345678', '2024-12-12 15:00:00', 'HOÀN THÀNH', '667-788-990-011', 'Bank D', '444-000-4444', 'Bank D'),
-  (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889-900-112-233', 'Bank E', '555-000-5555', 'Bank E'),
-  (1000.00, 'Thanh toán tiền mặt', '567890', '2024-12-12 17:00:00', 'HOÀN THÀNH', '998-877-665-544', 'Bank F', '666-000-6666', 'Bank F'),
-  (3000.00, 'Thanh toán khoản vay', '678901', '2024-12-12 18:00:00', 'ĐANG XỬ LÝ', '998-877-665-544', 'Bank G', '777-000-7777', 'Bank G'),
-  (4000.00, 'Thanh toán dịch vụ trực tuyến', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '223-344-556-677', 'Bank H', '888-000-8888', 'Bank H'),
-  (3500.00, 'Thanh toán phí dịch vụ', '890123', '2024-12-12 20:00:00', 'ĐANG XỬ LÝ', '334-455-667-788', 'Bank I', '999-000-9999', 'Bank I');
+  (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889-900-112-233', 'Bank E', '555-000-5555', 'Bank E');
 
--- Dữ liệu mẫu cho bảng Debits (status dùng tiếng Việt)
-INSERT INTO `Debits` (`amount`, `content`, `status`, `paymentTransactionsId`, `creditor`, `debtor`)
+-- Dữ liệu mẫu cho bảng Partners
+INSERT INTO `Partners` (`bankName`, `domain`, `partenerPublicKey`, `ourPrivateKey`, `ourPublicKey`)
 VALUES
-  (1000.00, 'Thanh toán dịch vụ', 'Chưa thanh toán', NULL, 1, 4),
-  (500.00, 'Thanh toán hàng hóa', 'Đã thanh toán', 2, 4, 1),
-  (1500.00, 'Thanh toán hóa đơn', 'Đã hủy', NULL, 5, 6),
-  (2000.00, 'Thanh toán cho đối tác', 'Chưa thanh toán', NULL, 7, 8),
-  (2500.00, 'Thanh toán dịch vụ công', 'Chưa thanh toán', NULL, 9, 7),
-  (1000.00, 'Thanh toán tiền mặt', 'Chưa thanh toán', NULL, 5, 1),
-  (3000.00, 'Thanh toán khoản vay', 'Đã thanh toán', 7, 6, 2),
-  (4000.00, 'Thanh toán dịch vụ trực tuyến', 'Đã thanh toán', 8, 8, 3),
-  (3500.00, 'Thanh toán phí dịch vụ', 'Đã hủy', NULL, 3, 7);
+  ('OWN_BANK', 'ownbank.com', 'public_key_ownbank', 'private_key_ownbank', 'public_key_ownbank'),
+  ('BANK A', 'banka.com', 'public_key_banka', 'private_key_banka', 'public_key_banka'),
+  ('BANK B', 'bankb.com', 'public_key_bankb', 'private_key_bankb', 'public_key_bankb');
+
+-- Dữ liệu mẫu cho bảng Notification
+INSERT INTO `Notification` (`title`, `message`, `isRead`, `customerId`)
+VALUES
+  ('Thông báo 1', 'Thông báo quan trọng', FALSE, 1),
+  ('Thông báo 2', 'Cập nhật dịch vụ', TRUE, 4),
+  ('Thông báo 3', 'Bảo trì hệ thống', FALSE, 5),
+  ('Thông báo 4', 'Khuyến mãi mới', TRUE, 6),
+  ('Thông báo 5', 'Cập nhật hệ thống', FALSE, 7);

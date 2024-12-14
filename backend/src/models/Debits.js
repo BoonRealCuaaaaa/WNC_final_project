@@ -1,4 +1,4 @@
-import _sequelize from 'sequelize';
+import _sequelize from "sequelize";
 const { Model, Sequelize } = _sequelize;
 
 export default class Debits extends Model {
@@ -20,6 +20,10 @@ export default class Debits extends Model {
     },
     status: {
       type: DataTypes.STRING(50),
+      allowNull: true
+    },
+    cancelReason: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     paymentTransactionsId: {
@@ -49,7 +53,7 @@ export default class Debits extends Model {
   }, {
     sequelize,
     tableName: 'debits',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

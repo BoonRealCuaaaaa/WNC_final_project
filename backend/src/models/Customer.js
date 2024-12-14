@@ -42,7 +42,7 @@ export default class Customer extends Model {
     sequelize,
     tableName: 'customer',
     hasTrigger: true,
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

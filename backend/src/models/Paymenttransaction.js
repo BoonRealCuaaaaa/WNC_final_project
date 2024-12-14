@@ -42,14 +42,14 @@ export default class Paymenttransaction extends Model {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    bankName: {
+    desBankName: {
       type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {
     sequelize,
     tableName: 'paymenttransaction',
-    timestamps: false,
+    timestamps: true,
     indexes: [
       {
         name: "PRIMARY",

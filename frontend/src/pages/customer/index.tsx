@@ -1,3 +1,4 @@
+import NotificationBell from "@/components/customer/notification";
 import { Separator } from "@/components/shared/separator";
 import { Avatar } from "antd";
 import { NavLink, Outlet } from "react-router-dom";
@@ -34,6 +35,9 @@ const CustomerLayout = () => {
                </NavLink>
             </div>
             <div className="flex flex-row space-x-3 items-center">
+               <div className="mx-5">
+                  <NotificationBell />
+               </div>
                <div className="flex flex-col items-end">
                   <p className="text-sm text-primary-gray">Khách hàng</p>
                   <p className="text-base font-medium">Nguyễn Trọng Đại</p>

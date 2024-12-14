@@ -1,4 +1,3 @@
-import { Toaster } from "../shared/toaster";
 import LeftPanel from "./left-panel";
 import LoginTabs from "./login-form";
 
@@ -9,7 +8,6 @@ const Login = () => {
             <LeftPanel className={"w-1/2"} />
             <LoginTabs />
          </div>
-         <Toaster/>
       </>
    );
 };
