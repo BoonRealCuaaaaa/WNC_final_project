@@ -21,5 +21,6 @@ export const generateDebitOtpApi = async ({ debitId }) => {
 };
 
 export const payDebitApi = async ({ debitId, otp }) => {
+   console.log(typeof debitId)
    return instance.post("/payment-transaction/debit", { debitId, otp });
 };

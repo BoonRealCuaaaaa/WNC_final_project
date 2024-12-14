@@ -11,6 +11,7 @@ import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 import { Server } from "socket.io";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
+import { sendOtpMail } from "./src/services/email.js";
 
 const app = express();
 app.use(express.json());
@@ -22,7 +23,7 @@ initializeSocket(server);
 const port = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
-app.use("/notification",verifyToken, notificationRouter);
+app.use("/notification", verifyToken, notificationRouter);
 app.use("/customer", verifyToken, customerRouter);
 app.use("/debits", verifyToken, debitRouter);
 app.use("/beneficiaries", verifyToken, beneficiariesRouter);
@@ -31,9 +32,9 @@ app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
 // Example of protected API
 let cnt = 0;
 app.get("/hello", verifyToken, (req, res) => {
-   return res.send(`Hello world ${cnt++}`);
+  return res.send(`Hello world ${cnt++}`);
 });
 
 server.listen(port, () => {
-   console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
