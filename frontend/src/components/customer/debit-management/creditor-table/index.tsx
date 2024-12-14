@@ -33,6 +33,7 @@ const CreditorTable = () => {
       mutationFn: createDebitApi,
       onSuccess: () => {
          setIsCreateModalVisible(false);
+         resetCreateForm();
          toast({
             title: "Tạo nhắc nợ thành công",
             description: "Bạn đã tạo nhắc nợ thành công",
@@ -44,7 +45,6 @@ const CreditorTable = () => {
    const { mutate: checkExist } = useMutation({
       mutationFn: checkExistApi,
       onSuccess: (response) => {
-         console.log(response);
          setValue("debtName", response.data.fullName);
          toast({
             title: "Tìm kiếm thành công",
@@ -79,7 +79,7 @@ const CreditorTable = () => {
       onSuccess: () => {
          reFetchDebits();
          setOpenCancelModal(false);
-         setValueCancel("cancelReason", "");
+         resetCancel();
          toast({
             title: "Hủy nhắc nợ thành công",
             description: "Bạn đã hủy nhắc nợ thành công",
@@ -87,7 +87,13 @@ const CreditorTable = () => {
       },
    });
 
-   const { register, watch, handleSubmit, setValue } = useForm({
+   const {
+      register,
+      watch,
+      handleSubmit,
+      setValue,
+      reset: resetCreateForm,
+   } = useForm({
       defaultValues: {
          debtorAccount: "",
          debtAmount: "",
@@ -99,7 +105,7 @@ const CreditorTable = () => {
    const {
       register: registerCancel,
       handleSubmit: handleSubmitCancel,
-      setValue: setValueCancel,
+      reset: resetCancel,
    } = useForm({
       defaultValues: {
          id: "",

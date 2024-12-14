@@ -51,13 +51,7 @@ export const sendNotification = async (userId, notification) => {
       return;
    }
 
-   console.log("=============================================================");
-   console.log(userId);
-   console.log(notification);
-
    const socketId = connectedUsers[userId];
-
-   console.log("socketId" + socketId);
 
    if (socketId) {
       io.to(socketId).emit("notify", notification);

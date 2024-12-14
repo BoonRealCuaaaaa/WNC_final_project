@@ -39,6 +39,7 @@ const DebtorTable = () => {
       onSuccess: () => {
          refetchDebits();
          setOtp("");
+         setCurrentStep(0);
          toast({
             title: "Thanh toán nợ thành công",
             description: "Bạn đã thanh toán nợ thành công",
@@ -46,6 +47,8 @@ const DebtorTable = () => {
          setOpenPaymentModal(false);
       },
       onError: () => {
+         setOtp("");
+         setCurrentStep(0);
          toast({
             title: "Thanh toán nợ thất bại",
             description: "Bạn đã thanh toán nợ thất bại",
