@@ -69,7 +69,7 @@ const responseAuthErrorInterceptor = async (error: AxiosError) => {
          }
       } catch (refreshError) {
          removeTokens();
-         window.location.href = "/login";
+         window.location.href = "/auth/login";
          return Promise.reject(refreshError);
       }
    }
