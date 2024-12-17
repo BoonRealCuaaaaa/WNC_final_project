@@ -1,6 +1,7 @@
 import { models } from "../lib/utils/database/index.js";
 import { generateOTP } from "../lib/utils/otp/index.js";
 import Decimal from "decimal.js";
+import { Op } from 'sequelize';
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
 
@@ -125,3 +126,39 @@ export const payDebit = async (req, res) => {
 
   return res.status(200).json({ message: "Debit paid" });
 };
+
+export const getTransactionHistory = async (req, res) => {
+  console.log("getTransactionHistory");
+  console.log(req.user);
+  const { accountNumber } = req.params;
+  try {
+    const transactions = await models.Paymenttransaction.findAll({
+      where: {
+        [Op.or]: [
+          { srcAccount: accountNumber },
+          { desAccount: accountNumber },
+        ],
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    const transactionIds = transactions.map(tx => tx.id);
+    const debits = await models.Debits.findAll({
+      where: {
+        paymentTransactionsId: {
+          [Op.in]: transactionIds,
+        },
+      },
+    });
+    const transactionsWithType = transactions.map(tx => {
+      const isDebit = debits.some(debit => debit.paymentTransactionsId === tx.id);
+      return {
+      ...tx.dataValues,
+      type: isDebit ? "Thanh toán nhắc nợ" : (tx.srcAccount === accountNumber ? "Chuyển khoản" : "Nhận tiền"),
+      };
+    });
+    res.status(200).json(transactionsWithType);
+    } catch (error) {
+    res.status(500).json({ error: error.message });
+    }
+  };
