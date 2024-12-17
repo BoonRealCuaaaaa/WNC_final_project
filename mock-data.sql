@@ -107,18 +107,18 @@ CREATE TABLE Notification (
 -- Dữ liệu mẫu cho bảng User
 INSERT INTO `User` (`username`, `password`, `role`)
 VALUES 
-  ('john_doe', 'password123', 'CUSTOMER'),
-  ('jane_smith', 'password123', 'TELLER'),
-  ('admin_user', 'admin123', 'ADMIN'),
-  ('mike_williams', 'password123', 'CUSTOMER'),
-  ('emily_jones', 'password123', 'CUSTOMER'),
-  ('lisa_white', 'password123', 'CUSTOMER'),
-  ('tom_brown', 'password123', 'CUSTOMER'),
-  ('lucy_black', 'password123', 'CUSTOMER'),
-  ('susan_green', 'password123', 'CUSTOMER'),
-  ('boon_real','password123','CUSTOMER'),
-  ('david_yellow', 'password123', 'CUSTOMER'),
-  ('boonreal', 'password123', 'CUSTOMER');
+  ('john_doe', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'), -- password: password123
+  ('jane_smith', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'TELLER'),
+  ('admin_user', '$2a$10$LSmPnaHK5j/23kxMutw4U.DctTLN6Ju/e3H9MU1vh/cn0EOcZYc6.', 'ADMIN'), -- password: admin123
+  ('mike_williams', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('emily_jones', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('lisa_white', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('tom_brown', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('lucy_black', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('susan_green', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('boon_real','$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6','CUSTOMER'),
+  ('david_yellow', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
+  ('boonreal', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER');
 
 -- Dữ liệu mẫu cho bảng Customer (otp và otpExpiredAt để trống)
 INSERT INTO `Customer` (`fullName`, `email`, `phone`, `otp`, `otpExpiredAt`, `userId`)

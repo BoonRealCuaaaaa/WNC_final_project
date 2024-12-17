@@ -4,6 +4,7 @@ import crypto from "crypto";
 import "dotenv/config";
 import { generateOTP } from "../lib/utils/otp/index.js";
 import { sendOtpMail } from "../services/email.js";
+import { comparePassword, hashPassword } from "../lib/utils/bcrypt/index.js";
 
 export const login = async (req, res) => {
   const { username, password } = req.body;
@@ -14,8 +15,8 @@ export const login = async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  if (user.password !== password) {
-    return res.status(401).json({ message: "Invalid password" });
+  if (!(await comparePassword(password, user.password))) {
+    return res.status(402).json({ message: "Invalid password" });
   }
 
   const payload = { id: user.id, username: user.username, role: user.role };
@@ -60,6 +61,7 @@ export const refreshToken = async (req, res) => {
     username: dbRecord.user.username,
     role: dbRecord.user.role,
   };
+
   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN, {
     expiresIn: "1h",
   });
@@ -115,9 +117,10 @@ export const resetPassword = async (req, res) => {
   }
 
   const user = customer.user;
-  user.password = password;
+  const hashedPassword = await hashPassword(password);
+  user.password = hashedPassword;
   await user.save();
 
-  console.log(user)
+  console.log(user);
   return res.status(200).json({ message: "Password updated" });
 };
