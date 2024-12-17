@@ -12,3 +12,15 @@ export const refreshApi = async () => {
 export const getHello = async () => {
    return instance.get("/hello");
 };
+
+export const generateForgotPasswordOtpApi = async (email) => {
+   return instance.post("/auth/otp", { email });
+}
+
+export const verifyForgotPasswordOtpApi = async ({email, otp}) => {
+   return instance.post("/auth/verify-otp", { email, otp });
+}
+
+export const resetPasswordApi = async ({email, password}) => {
+   return instance.post("/auth/reset-password", { email, password });
+}
