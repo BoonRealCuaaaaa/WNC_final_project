@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import "dotenv/config";
 import { generateOTP } from "../lib/utils/otp/index.js";
+import { sendOtpMail } from "../services/email.js";
 
 export const login = async (req, res) => {
   const { username, password } = req.body;
@@ -78,7 +79,7 @@ export const generateOtpForForgotPassword = async (req, res) => {
   customer.otpExpires = new Date(Date.now() + 600000);
   await customer.save();
 
-  // sendOtpMail(email, otp, "OTP cho việc lấy lại mật khẩu");
+  sendOtpMail(email, otp, "OTP cho việc lấy lại mật khẩu");
 
   return res.status(200).json({ message: "OTP sent" });
 };
@@ -92,11 +93,11 @@ export const verifyOtpForForgotPassword = async (req, res) => {
   }
 
   if (customer.otp !== otp) {
-    return res.status(401).json({ message: "Invalid OTP" });
+    return res.status(402).json({ message: "Invalid OTP" });
   }
 
   if (new Date() > customer.otpExpires) {
-    return res.status(401).json({ message: "OTP expired" });
+    return res.status(402).json({ message: "OTP expired" });
   }
 
   return res.status(200).json({ message: "OTP verified" });

@@ -5,6 +5,7 @@ import ForgotPasswordInputEmail from "./input-email";
 import ForgotPasswordInputOtp from "./input-otp";
 import ForgotPasswordInputPassword from "./input-password";
 import BackToLogin from "./back-to-login";
+import { Toaster } from "../shared/toaster";
 
 const ForgotPassword = () => {
   const [email,setEmail] = useState("");

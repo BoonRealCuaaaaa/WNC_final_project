@@ -13,6 +13,13 @@ const ForgotPasswordInputPassword = (props) => {
     onSuccess: () => {
       props.setStep((prev) => prev + 1);
     },
+    onError: () => {
+      toast({
+        title: "Đổi mật khẩu thất bại",
+        description: "Vui lòng thử lại",
+        variant: "destructive",
+      });
+    },
   });
 
   const onHandleSubmmit = (data) => {

@@ -1,22 +1,55 @@
-import { verifyForgotPasswordOtpApi } from "@/api/auth.api";
+import {
+  generateForgotPasswordOtpApi,
+  verifyForgotPasswordOtpApi,
+} from "@/api/auth.api";
 import { Button } from "@/components/shared/button";
+import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "antd";
 import { useForm, Controller } from "react-hook-form";
 
 const ForgotPasswordInputOtp = (props) => {
+  const { toast } = useToast();
   const { control, handleSubmit } = useForm();
   const { mutate: mutateSendOtp } = useMutation({
     mutationFn: verifyForgotPasswordOtpApi,
     onSuccess: () => {
       props.setStep((prev) => prev + 1);
     },
+    onError: () => {
+      toast({
+        title: "Mã OTP không đúng",
+        description: "Vui lòng nhập lại mã OTP",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: resendOtp } = useMutation({
+    mutationFn: generateForgotPasswordOtpApi,
+    onSuccess: () => {
+      toast({
+        title: "Gửi mã OTP thành công",
+        description: "Vui lòng kiểm tra email",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Gửi mã OTP thất bại",
+        description: "Vui lòng thử lại",
+        variant: "destructive",
+      });
+    },
   });
 
   const onSubmit = (data) => {
-    console.log(data);
     mutateSendOtp({ email: props.email, otp: data.otp });
   };
+
+  const onResendOtp = () => {
+    resendOtp({ email: props.email });
+  };
+
   return (
     <>
       <p className="text-2xl font-semibold">Đổi mật khẩu</p>
@@ -28,9 +61,14 @@ const ForgotPasswordInputOtp = (props) => {
           render={({ field }) => <Input.OTP {...field} className="w-1/3 " />}
         />
         <div className="self-center text-sm">
-          Nhập mã xác thực được gửi đến email test@gmail.com của bạn
+          {`Nhập mã xác thực được gửi đến email `}
+          <span className="font-bold">{props.email}</span>
+          {` của bạn`}
         </div>
-        <p className="text-[#7c3aed] text-sm font-normal self-center">
+        <p
+          className="text-[#7c3aed] text-sm font-normal self-center cursor-pointer"
+          onClick={onResendOtp}
+        >
           Gửi lại mã xác thực
         </p>
       </div>

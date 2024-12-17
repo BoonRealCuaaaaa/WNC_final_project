@@ -1,16 +1,25 @@
 import { generateForgotPasswordOtpApi } from "@/api/auth.api";
 import { Button } from "@/components/shared/button";
+import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "antd";
 import { useForm, Controller } from "react-hook-form";
 
 const ForgotPasswordInputEmail = (props) => {
+  const { toast } = useToast();
   const { control, handleSubmit, watch } = useForm();
   const { mutate: mutateSendEmail } = useMutation({
     mutationFn: generateForgotPasswordOtpApi,
     onSuccess: () => {
       props.setEmail(watch("email"));
       props.setStep((prev) => prev + 1);
+    },
+    onError: () => {
+      toast({
+        title: "Email không tồn tại",
+        description: "Vui lòng nhập lại email",
+        variant: "destructive",
+      });
     },
   });
 
