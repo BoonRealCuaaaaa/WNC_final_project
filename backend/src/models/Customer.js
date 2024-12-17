@@ -15,7 +15,7 @@ export default class Customer extends Model {
       allowNull: true
     },
     email: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(255), 
       allowNull: true
     },
     phone: {

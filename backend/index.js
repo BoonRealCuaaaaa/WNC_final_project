@@ -7,15 +7,18 @@ import debitRouter from "./src/routes/debit.route.js";
 import notificationRouter from "./src/routes/notification.route.js";
 import beneficiariesRouter from "./src/routes/beneficiaries.route.js";
 import paymentTransactionRouter from "./src/routes/payment-transaction.route.js";
+import employeeRouter from "./src/routes/employee.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 import { Server } from "socket.io";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
 import { sendOtpMail } from "./src/services/email.js";
+import { verifyTellerAccount } from "./src/middlewares/verify-teller-account.middleware.js";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
 
 const server = http.createServer(app);
 initializeSocket(server);
@@ -28,6 +31,7 @@ app.use("/customer", verifyToken, customerRouter);
 app.use("/debits", verifyToken, debitRouter);
 app.use("/beneficiaries", verifyToken, beneficiariesRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
+app.use("/employee", verifyToken, verifyTellerAccount, employeeRouter);
 
 // Example of protected API
 let cnt = 0;

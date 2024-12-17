@@ -1,4 +1,6 @@
 import { models } from "../lib/utils/database/index.js";
+import { generateOTP } from "../lib/utils/otp/index.js";
+import { sendOtpMail } from "../services/email.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import "dotenv/config";
@@ -123,4 +125,22 @@ export const resetPassword = async (req, res) => {
 
   console.log(user);
   return res.status(200).json({ message: "Password updated" });
+};
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await models.Customer.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "Email does not exist" });
+    }
+    const otp = generateOTP();
+    user.otp = otp;
+    user.otpExpiredAt = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+    await sendOtpMail(email, otp, "Confirm Forgot Password");
+    res.status(200).json({ message: "OTP has been sent to your email" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

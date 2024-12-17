@@ -80,7 +80,8 @@ CREATE TABLE Debits (
   FOREIGN KEY (debtor) REFERENCES Customer(id),
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+)
+
 
 CREATE TABLE Partners (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -163,7 +164,16 @@ VALUES
   (1500.00, 'Thanh toán hóa đơn', '234567', '2024-12-12 14:00:00', 'ĐANG XỬ LÝ', '112-233-445-566', 'Bank C', '333-000-3333', 'Bank C'),
   (2000.00, 'Thanh toán cho đối tác', '345678', '2024-12-12 15:00:00', 'HOÀN THÀNH', '667-788-990-011', 'Bank D', '444-000-4444', 'Bank D'),
   (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889-900-112-233', 'Bank E', '555-000-5555', 'Bank E');
+  (3000.00, 'Thanh toán dịch vụ bổ sung', '567890', '2024-12-12 17:00:00', 'ĐANG XỬ LÝ', '123-456-789-012', 'Bank A', '666-000-6666', 'Bank F'),
+  (4000.00, 'Thanh toán đầu tư', '678901', '2024-12-12 18:00:00', 'HOÀN THÀNH', '987-654-321-098', 'Bank B', '777-000-7777', 'Bank G');
 
+
+-- Dữ liệu mẫu cho bảng Debits
+INSERT INTO `Debits` (`amount`, `content`, `status`, `cancelReason`, `paymentTransactionsId`, `creditor`, `debtor`)
+VALUES
+  (1000.00, 'Debit Transaction 1', 'Completed', NULL, 1, 1, 4),
+  (500.00, 'Debit Transaction 2', 'Pending', NULL, 2, 4, 5);
+  
 -- Dữ liệu mẫu cho bảng Partners
 INSERT INTO `Partners` (`bankName`, `domain`, `partenerPublicKey`, `ourPrivateKey`, `ourPublicKey`)
 VALUES
