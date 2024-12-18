@@ -8,6 +8,7 @@ import {
   refreshToken,
   resetPassword,
   verifyOtpForForgotPassword,
+  forgotPassword,
 } from "../controllers/auth.controller.js";
 
 const router = express.Router();
@@ -23,6 +24,8 @@ router.post(
 router.post("/otp", generateOtpForForgotPassword);
 
 router.post("/verify-otp", verifyOtpForForgotPassword);
+
+router.post("/forgot-password", forgotPassword);
 
 router.post("/reset-password", resetPassword);
 
