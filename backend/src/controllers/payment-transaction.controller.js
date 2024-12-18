@@ -1,7 +1,7 @@
 import { models } from "../lib/utils/database/index.js";
 import { generateOTP } from "../lib/utils/otp/index.js";
 import Decimal from "decimal.js";
-import { Op } from 'sequelize';
+import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
 
@@ -128,37 +128,104 @@ export const payDebit = async (req, res) => {
 };
 
 export const getTransactionHistory = async (req, res) => {
-  console.log("getTransactionHistory");
-  console.log(req.user);
-  const { accountNumber } = req.params;
+  const { id } = req.user;
   try {
+    const account = await models.Paymentaccount.findOne({
+      where: { customerId: id },
+      attributes: ["accountNumber"],
+    });
+
+    if (!account) {
+      return res.status(404).json({ error: "Payment account not found." });
+    }
+
+    const accountNumber = account.accountNumber;
+
     const transactions = await models.Paymenttransaction.findAll({
       where: {
-        [Op.or]: [
-          { srcAccount: accountNumber },
-          { desAccount: accountNumber },
-        ],
+        [Op.or]: [{ srcAccount: accountNumber }, { desAccount: accountNumber }],
       },
       order: [["createdAt", "DESC"]],
     });
 
-    const transactionIds = transactions.map(tx => tx.id);
+    const transactionIds = transactions.map((tx) => tx.id);
+
     const debits = await models.Debits.findAll({
       where: {
         paymentTransactionsId: {
           [Op.in]: transactionIds,
         },
       },
+      attributes: ["paymentTransactionsId"],
     });
-    const transactionsWithType = transactions.map(tx => {
-      const isDebit = debits.some(debit => debit.paymentTransactionsId === tx.id);
+
+    // Extract unique related account numbers
+    const relatedAccountNumbers = transactions.map((tx) =>
+      tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount
+    );
+    const uniqueRelatedAccounts = [...new Set(relatedAccountNumbers)];
+
+    // Bulk fetch related Customers
+    const relatedCustomers = await models.Customer.findAll({
+      include: {
+        model: models.Paymentaccount,
+        as: "paymentaccounts",
+        where: { accountNumber: uniqueRelatedAccounts },
+        attributes: [],
+      },
+      attributes: ["id", "fullName"],
+    });
+
+    // Bulk fetch related Beneficiaries
+    const relatedBeneficiaries = await models.Beneficiaries.findAll({
+      where: {
+        accountNumber: uniqueRelatedAccounts,
+        customerId: id,
+      },
+      attributes: ["accountNumber", "name"],
+    });
+
+    // Create maps for quick lookup
+    const customerMap = new Map();
+    relatedCustomers.forEach((customer) => {
+      customer.paymentaccounts.forEach((account) => {
+        customerMap.set(account.accountNumber, customer.fullName);
+      });
+    });
+
+    const beneficiaryMap = new Map();
+    relatedBeneficiaries.forEach((beneficiary) => {
+      beneficiaryMap.set(beneficiary.accountNumber, beneficiary.name);
+    });
+
+    // Assemble transaction history with type and related person
+    const transactionsWithType = transactions.map((tx) => {
+      const isDebit = debits.some(
+        (debit) => debit.paymentTransactionsId === tx.id
+      );
+      const relatedAccount =
+        tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount;
+      const relatedPerson =
+        customerMap.get(relatedAccount) ||
+        beneficiaryMap.get(relatedAccount) ||
+        "Unknown";
+
       return {
-      ...tx.dataValues,
-      type: isDebit ? "Thanh toán nhắc nợ" : (tx.srcAccount === accountNumber ? "Chuyển khoản" : "Nhận tiền"),
+        ...tx.dataValues,
+        type: isDebit
+          ? "Thanh toán nhắc nợ"
+          : tx.srcAccount === accountNumber
+          ? "Chuyển khoản"
+          : "Nhận tiền",
+        relatedPerson,
+        accountNumber:
+          tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount,
       };
     });
+
     res.status(200).json(transactionsWithType);
-    } catch (error) {
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
-    }
-  };
+  }
+};

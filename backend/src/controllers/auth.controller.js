@@ -1,8 +1,4 @@
 import { models } from "../lib/utils/database/index.js";
-import { generateOTP } from "../lib/utils/otp/index.js";
-import { sendOtpMail } from "../services/email.js";
-import { generateOTP } from "../lib/utils/otp/index.js";
-import { sendOtpMail } from "../services/email.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import "dotenv/config";
