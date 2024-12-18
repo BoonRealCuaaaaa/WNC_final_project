@@ -68,3 +68,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .page-content {
+    @apply pt-6 pb-8 px-8 max-w-page-content w-full;
+  }
+}

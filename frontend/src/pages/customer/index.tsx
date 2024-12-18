@@ -5,8 +5,8 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const CustomerLayout = () => {
    return (
-      <>
-         <header className=" flex flex-row justify-between py-6 px-96">
+      <div className="flex flex-col h-screen">
+         <header className="flex flex-row justify-between py-6 px-96">
             <div className="flex flex-row space-x-6 items-center">
                <NavLink
                   to="/abc"
@@ -46,10 +46,12 @@ const CustomerLayout = () => {
             </div>
          </header>
          <Separator />
-         <main className="pt-6 px-96">
-            <Outlet />
+         <main className="flex justify-center flex-1">
+            <div className="page-content">
+               <Outlet />
+            </div>
          </main>
-      </>
+      </div>
    );
 };
 
