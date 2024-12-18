@@ -1,5 +1,5 @@
 import { resetPasswordApi } from "@/api/auth.api";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "antd";

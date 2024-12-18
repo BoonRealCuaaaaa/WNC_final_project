@@ -1,4 +1,4 @@
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { Avatar, Input, Steps, Table, Tag } from "antd";
 import { CheckSquare, XLg } from "react-bootstrap-icons";
 
@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/shared/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import {

@@ -1,5 +1,5 @@
 import NotificationBell from "@/components/customer/notification";
-import { Separator } from "@/components/shared/separator";
+import { Separator } from "@/components/ui/separator";
 import { Avatar } from "antd";
 import { NavLink, Outlet } from "react-router-dom";
 

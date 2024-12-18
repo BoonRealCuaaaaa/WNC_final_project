@@ -1,4 +1,4 @@
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { Avatar, Input, Table, Tag, List, Modal } from "antd";
 import * as Form from "@radix-ui/react-form";
 import { PersonBadge, Search, XLg } from "react-bootstrap-icons";
@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/shared/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { useForm } from "react-hook-form";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import {

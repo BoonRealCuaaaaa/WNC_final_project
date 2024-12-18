@@ -1,4 +1,4 @@
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "antd";
 import { useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";

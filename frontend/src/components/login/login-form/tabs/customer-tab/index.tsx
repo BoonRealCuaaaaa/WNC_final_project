@@ -1,5 +1,5 @@
 import { loginApi } from "@/api/auth.api";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { setAccessToken, setRefreshToken, setRole } from "@/utils/auth";
 import { useMutation } from "@tanstack/react-query";

@@ -1,4 +1,4 @@
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 const BackToLogin = (props) => {

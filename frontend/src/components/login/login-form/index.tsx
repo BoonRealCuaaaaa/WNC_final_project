@@ -3,7 +3,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@src/components/shared/tabs";
+} from "@src/components/ui/tabs";
 import CustomerTab from "./tabs/customer-tab";
 import TellerTab from "./tabs/teller-tab";
 import AdminTab from "./tabs/admin-tab";
