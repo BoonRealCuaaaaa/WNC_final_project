@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { ListAction, ListActionGroup, ListItem } from "@/components/ui/list";
 import avatarImage from "@/assets/avatar.jpg"
-import { Account } from "@/types/receiver";
+import { Account } from "@/types/account";
 import { Description } from "@/components/ui/description";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash } from "lucide-react"

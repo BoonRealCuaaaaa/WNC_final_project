@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { List, ListContent, ListDescription, ListHeader, ListTitle, ListTitleGroup } from "@/components/ui/list";
 import AccountListItem from "./list-item";
-import { Account } from "@/types/receiver";
+import { Account } from "@/types/account";
 
 export default function AccountList() {
     const receivers: Account[] = [
