@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { List, ListContent, ListDescription, ListHeader, ListTitle, ListTitleGroup } from "@/components/ui/list";
-import ReceiverListItem from "./list-item";
-import { Receiver } from "@/types/receiver";
+import AccountListItem from "./list-item";
+import { Account } from "@/types/receiver";
 
-export default function ReceiverList() {
-    const receivers: Receiver[] = [
+export default function AccountList() {
+    const receivers: Account[] = [
         {
             owner: "Nguyen Trong Dai",
             cardNumber: "1234567890123456",
@@ -54,7 +54,7 @@ export default function ReceiverList() {
                 </Button>
             </ListHeader>
             <ListContent>
-                {receivers.map(receiver => <ReceiverListItem receiver={receiver} />)}
+                {receivers.map(receiver => <AccountListItem receiver={receiver} />)}
             </ListContent>
         </List>
     );

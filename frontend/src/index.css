@@ -73,4 +73,13 @@
   .page-content {
     @apply pt-6 pb-8 px-8 max-w-page-content w-full;
   }
+  .nav-link-active {
+    @apply text-foreground;
+  }
+  .nav-link-inactive {
+    @apply text-muted-foreground
+  }
+  header #nav-bar a {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2
+  }
 }

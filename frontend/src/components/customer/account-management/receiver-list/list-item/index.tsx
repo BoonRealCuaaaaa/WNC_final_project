@@ -1,13 +1,13 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { ListAction, ListActionGroup, ListItem } from "@/components/ui/list";
 import avatarImage from "@/assets/avatar.jpg"
-import { Receiver } from "@/types/receiver";
+import { Account } from "@/types/receiver";
 import { Description } from "@/components/ui/description";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash } from "lucide-react"
 import { formatCardNumber } from "@/lib/string";
 
-export default function ReceiverListItem({ receiver }: { receiver: Receiver }) {
+export default function AccountListItem({ receiver }: { receiver: Account }) {
 
     return (
         <ListItem>
