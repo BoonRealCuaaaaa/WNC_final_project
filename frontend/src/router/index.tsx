@@ -5,6 +5,9 @@ import CustomerRoutes from "./customer";
 import PageError401 from "@/pages/error/401";
 import CustomerLayout from "@/pages/customer";
 import AuthLayout from "@/pages/auth";
+import AdminLayout from "@/pages/admin";
+import EmployeeManagementPage from "@/pages/admin/employee-management";
+import TransactionHistory from "@/pages/admin/transaction-history";
 
 const AppRouter = () => {
   return (
@@ -17,6 +20,10 @@ const AppRouter = () => {
         <Route element={<CustomerLayout />}>
           <Route path="/*" element={<CustomerRoutes />} />
         </Route>
+      </Route>
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<EmployeeManagementPage />} />
+        <Route path="transaction-history" element={<TransactionHistory />} />
       </Route>
     </Routes>
   );
