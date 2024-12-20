@@ -17,3 +17,25 @@ export const validateExistCustomer = async (req, res) => {
 
    return res.status(200).json({ fullName: customer.fullName });
 };
+
+export const getPaymentAccount = async (req, res) => {
+
+   const data = await models.Paymentaccount.findOne({
+      include: {
+         model: models.Customer,
+         as: "customer",
+         where: {userId: req.user.id}
+      }
+   });
+
+   if (!data) {
+      return res.status(404).json({ message: "Customer not found" });
+   }
+
+   const paymentAccount = data.dataValues;
+
+   return res.status(200).json({
+      accountNumber: paymentAccount.accountNumber,
+      balance: paymentAccount.balance
+   });
+};

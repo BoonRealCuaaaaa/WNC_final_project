@@ -7,3 +7,7 @@ export const checkExistApi = (accountNumber) => {
 export const getPaymentHistoryApi = () => {
    return instance.get("/payment-transaction/history");
 }
+
+export const getPaymentAccountApi = () => {
+   return instance.get("/customer/payment-account");
+}
