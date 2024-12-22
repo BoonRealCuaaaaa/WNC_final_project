@@ -17,8 +17,24 @@ function thoudsandsSeparator(input: number): string {
     return nfObject.format(input);
 }
 
+function formatPhoneNumber(input: string): string {
+    if(!input) return input;
+    // Remove any non-digit characters
+    const digitsOnly = input.replace(/\D/g, '');
+
+    // Format based on length
+    if (digitsOnly.length === 10) {
+        return digitsOnly.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    } else if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+        return digitsOnly.replace(/1(\d{3})(\d{3})(\d{4})/, '1 ($1) $2-$3');
+    } else {
+        return input; // Return the original input if it doesn't match expected lengths
+    }
+}
+
 export {
     formatCardNumber,
     getName,
-    thoudsandsSeparator
+    thoudsandsSeparator,
+    formatPhoneNumber,
 }

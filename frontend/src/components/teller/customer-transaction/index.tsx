@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getPaymentHistoryApi } from "@/api/customer.api";
+import { getCustomerTransactionApi } from "@/api/teller.api";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import { Avatar, Table, Input, Tag } from "antd";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { SortOrder } from "antd/es/table/interface";
 
 interface Transaction {
@@ -12,11 +13,13 @@ interface Transaction {
   accountNumber: string;
   amount: number;
   createdAt: string;
+  customerAccountNumber: string;
 }
-const PaymentTransactionManagement = () => {
+const CustomerTransactionManagement = () => {
+  const { id } = useParams();
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["payment-transactions"],
-    queryFn: getPaymentHistoryApi,
+    queryFn: () => getCustomerTransactionApi(id).then((res) => res.data),
   });
 
   const [searchText, setSearchText] = useState("");
@@ -122,9 +125,8 @@ const PaymentTransactionManagement = () => {
   if (isLoading) {
     return <div>Loading...</div>;
   }
-  // Extract the filtered transactions to a variable to avoid duplication
 
-  const filteredTransactions = transactions.data.filter(
+  const filteredTransactions = transactions.filter(
     (item: Transaction) =>
       item?.relatedPerson?.toLowerCase().includes(searchText.toLowerCase()) ||
       item.accountNumber.toLowerCase().includes(searchText.toLowerCase())
@@ -142,7 +144,7 @@ const PaymentTransactionManagement = () => {
       </div>
       <Input
         className="w-64"
-        placeholder="Lọc..."
+        placeholder="TÌm kiếm"
         value={searchText}
         onChange={(e) => {
           setSearchText(e.target.value);
@@ -160,4 +162,4 @@ const PaymentTransactionManagement = () => {
   );
 };
 
-export default PaymentTransactionManagement;
+export default CustomerTransactionManagement;

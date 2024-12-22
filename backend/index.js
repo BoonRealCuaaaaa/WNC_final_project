@@ -7,7 +7,7 @@ import debitRouter from "./src/routes/debit.route.js";
 import notificationRouter from "./src/routes/notification.route.js";
 import beneficiaryRouter from "./src/routes/beneficiary.route.js";
 import paymentTransactionRouter from "./src/routes/payment-transaction.route.js";
-import employeeRouter from "./src/routes/employee.route.js";
+import tellerRouter from "./src/routes/teller.route.js";
 import partnerRouter from "./src/routes/partner.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 import { Server } from "socket.io";
@@ -20,7 +20,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-
 const server = http.createServer(app);
 initializeSocket(server);
 
@@ -32,7 +31,7 @@ app.use("/customer", verifyToken, customerRouter);
 app.use("/debits", verifyToken, debitRouter);
 app.use("/beneficiaries", verifyToken, beneficiaryRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
-app.use("/employee", verifyToken, verifyTellerAccount, employeeRouter);
+app.use("/teller", verifyToken, verifyTellerAccount, tellerRouter);
 app.use("/partners", verifyToken, partnerRouter);
 
 // Example of protected API

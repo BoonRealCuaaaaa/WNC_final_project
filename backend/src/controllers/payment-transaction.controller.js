@@ -128,7 +128,13 @@ export const payDebit = async (req, res) => {
 };
 
 export const getTransactionHistory = async (req, res) => {
-  const { id } = req.user;
+  let id;
+  if (req.user.role === "TELLER") {
+    id = req.params.id;
+  }
+  if (req.user.role === "CUSTOMER") {
+    id = req.user.id;
+  }
   try {
     const account = await models.Paymentaccount.findOne({
       where: { customerId: id },
@@ -220,12 +226,12 @@ export const getTransactionHistory = async (req, res) => {
         relatedPerson,
         accountNumber:
           tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount,
+        customerAccountNumber: accountNumber,
       };
     });
 
     res.status(200).json(transactionsWithType);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };
