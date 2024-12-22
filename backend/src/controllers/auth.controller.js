@@ -142,3 +142,18 @@ export const forgotPassword = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const changePassword = async (req, res) => {
+  const { username, oldPassword, newPassword } = req.body;
+  console.log(req.user);
+  const user = await models.User.findByPk(req.user.id);
+
+  if (!(await comparePassword(oldPassword, user.password))) {
+    return res.status(402).json({ message: "Old password is incorrect" });
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+  user.password = hashedPassword;
+  await user.save();
+  return res.status(200).json({ message: "Password changed" });
+};

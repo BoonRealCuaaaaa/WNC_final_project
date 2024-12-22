@@ -10,10 +10,8 @@ import paymentTransactionRouter from "./src/routes/payment-transaction.route.js"
 import tellerRouter from "./src/routes/teller.route.js";
 import partnerRouter from "./src/routes/partner.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
-import { Server } from "socket.io";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
-import { sendOtpMail } from "./src/services/email.js";
 import { verifyTellerAccount } from "./src/middlewares/verify-teller-account.middleware.js";
 
 const app = express();
@@ -33,12 +31,6 @@ app.use("/beneficiaries", verifyToken, beneficiaryRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
 app.use("/teller", verifyToken, verifyTellerAccount, tellerRouter);
 app.use("/partners", verifyToken, partnerRouter);
-
-// Example of protected API
-let cnt = 0;
-app.get("/hello", verifyToken, (req, res) => {
-  return res.send(`Hello world ${cnt++}`);
-});
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);

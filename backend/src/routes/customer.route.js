@@ -11,4 +11,6 @@ router.post("/status", validateExistCustomer);
 router.post("/username/status", validateUsernameExist);
 router.get("/payment-account", getPaymentAccount);
 
+router.post("/change-password", changePassword);
+
 export default router;
