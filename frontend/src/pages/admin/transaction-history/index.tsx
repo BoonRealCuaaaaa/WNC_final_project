@@ -1,9 +1,10 @@
+import TransactionHistory from "@/components/admin/transaction-history";
 
 
-const TransactionHistory = () => {
+const TransactionHistoryPage = () => {
     return (
-        <h2>TransactionHistory</h2>
+        <TransactionHistory />
     )
 }
 
-export default TransactionHistory;
+export default TransactionHistoryPage;

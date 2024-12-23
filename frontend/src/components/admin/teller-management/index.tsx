@@ -16,10 +16,12 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "antd";
 import { useState } from "react";
-import PaginationSection from "../components/pagination";
+import PaginationSection from "../pagination";
 import { Button } from "@/components/ui/button";
-import { getTellersApi } from "@/api/teller.api";
+import { getAllTellersApi } from "@/api/admin.api";
 import { useQuery } from "@tanstack/react-query";
+import DeleteTellerModal from "./delete-teller-modal";
+import EditTellerModal from "./edit-teller-modal";
 
 // const data: Teller[] = [
 //   {
@@ -154,12 +156,29 @@ export const columns: ColumnDef<Teller>[] = [
   {
     id: "Actions",
     header: "actions",
-    cell: () => (
-      <div className="flex items-center justify-end w-11">
-        <Edit className="h-4" />
-        <Trash className="h-4" />
-      </div>
-    ),
+    cell: ({ row }) => {
+      const teller: Teller = {
+        fullName: row.getValue("fullName"),
+        email: row.getValue("email"),
+        phone: row.getValue("phone"),
+        username: row.getValue("username"),
+        id: row.getValue("id"),
+      };
+      return (
+        <div className="flex items-center justify-end w-11">
+          <EditTellerModal teller={teller}>
+            <Edit className="h-4 cursor-pointer" />
+          </EditTellerModal>
+          <DeleteTellerModal
+            handleDelete={() => console.log("detele")}
+            tellerName={row.getValue("fullName")}
+            tellerId={row.getValue("id")}
+          >
+            <Trash className="h-4 cursor-pointer" />
+          </DeleteTellerModal>
+        </div>
+      );
+    },
   },
 ];
 export default function TellerManagement() {
@@ -167,12 +186,12 @@ export default function TellerManagement() {
     pageIndex: 0, //initial page index
     pageSize: 5, //default page size
   });
-  const [globalFilter, setGlobalFilter] = useState("");  
+  const [globalFilter, setGlobalFilter] = useState("");
   const [rowSelection, setRowSelection] = useState({});
 
   const { data: tellers, isLoading } = useQuery({
     queryKey: ["tellers"],
-    queryFn: getTellersApi,
+    queryFn: getAllTellersApi,
   });
 
   const table = useReactTable({
@@ -190,18 +209,21 @@ export default function TellerManagement() {
       pagination,
     },
     initialState: {
-      globalFilter: '', // Set initial state if not managing globalFilter state
+      globalFilter: "", // Set initial state if not managing globalFilter state
     },
   });
 
   if (isLoading) {
-    return <h2>Loading...</h2>
+    return <h2>Loading...</h2>;
   }
 
-  const currentPage = table.getState().pagination.pageIndex > 0 ? table.getState().pagination.pageIndex + 1 : 0
+  const currentPage =
+    table.getPageCount() > 0
+      ? table.getState().pagination.pageIndex + 1
+      : 0;
 
   return (
-    <div className="w-full">
+    <div className="w-full border-2 p-6 rounded-lg">
       <div className="flex flex-row justify-between items-center">
         <div>
           <p className="font-semibold">Danh sách giao dịch viên</p>

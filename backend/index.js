@@ -8,6 +8,7 @@ import notificationRouter from "./src/routes/notification.route.js";
 import beneficiariesRouter from "./src/routes/beneficiaries.route.js";
 import paymentTransactionRouter from "./src/routes/payment-transaction.route.js";
 import employeeRouter from "./src/routes/employee.route.js";
+import adminRouter from "./src/routes/admin.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 import { Server } from "socket.io";
 import http from "http";
@@ -32,6 +33,7 @@ app.use("/debits", verifyToken, debitRouter);
 app.use("/beneficiaries", verifyToken, beneficiariesRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
 app.use("/employee", verifyToken, verifyTellerAccount, employeeRouter);
+app.use("/admin", adminRouter);
 
 // Example of protected API
 let cnt = 0;
