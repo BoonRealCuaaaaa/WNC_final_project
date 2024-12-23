@@ -3,6 +3,7 @@ import {
   getPaymentAccount,
   validateExistCustomer,
   validateUsernameExist,
+  changePassword,
 } from "../controllers/customer.controller.js";
 
 const router = express.Router();
