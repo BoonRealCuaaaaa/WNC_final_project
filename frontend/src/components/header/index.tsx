@@ -6,6 +6,7 @@ import { Description } from "../ui/description";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Dropdown } from "antd";
 import { getRole, getUserName, removeTokens } from "@/utils/auth";
+import NotificationBell from "../customer/notification";
 
 const Header = React.forwardRef<
   HTMLDivElement,
@@ -51,10 +52,12 @@ const Header = React.forwardRef<
           {children}
         </div>
         <div className="flex items-center gap-x-4">
+          <NotificationBell />
           <div className="flex flex-col gap-y-1 items-end">
             <Description>{role}</Description>
             <div className="font-medium text-[14px]/[14px]">{userName}</div>
           </div>
+
           <Dropdown menu={{ items }} trigger={["click"]}>
             <Avatar>
               <AvatarImage src={avatarImage} />
