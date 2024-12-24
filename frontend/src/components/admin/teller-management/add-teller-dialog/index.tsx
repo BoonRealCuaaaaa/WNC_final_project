@@ -9,49 +9,56 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PropsWithChildren } from "react";
-import { Teller } from "@/types/teller";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 
-interface EditTellerModalProps {
-  handleEdit?: (tellerId: number, data: Record<string, unknown>) => void;
-  teller: Teller;
+type Inputs = {
+  username: string
+  password: string
+  fullName: string
+  email: string
+  phone: string
 }
 
-type EditTellerModalWithChildrenProp = EditTellerModalProps & PropsWithChildren;
+interface AddTellerDialogProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  handleAdd: (teller: {username: string; password: string; fullName: string; email: string; phone: string;}) => void;
+}
 
-export default function EditTellerModal({
+type AddTellerDialogWithChildrenProps = AddTellerDialogProps & PropsWithChildren;
+
+export default function AddTellerDialog({
+  open,
+  setOpen,
   children,
-  handleEdit,
-  teller,
-}: EditTellerModalWithChildrenProp) {
+  handleAdd,
+}: AddTellerDialogWithChildrenProps) {
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    reValidateMode: "onChange",
-    defaultValues: {
-      username: teller.username,
-      fullName: teller.fullName,
-      email: teller.email,
-      phone: teller.phone,
-    },
+  } = useForm<Inputs>({
+    mode: "onSubmit",
+    reValidateMode: "onChange"
   });
 
+  const onAddSubmit: SubmitHandler<Inputs> = (data) => {
+    handleAdd(data);
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={() => setOpen(!open)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[525px] gap-0">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Chỉnh sửa giao dịch viên</DialogTitle>
+          <DialogTitle>Thêm giao dịch viên</DialogTitle>
         </DialogHeader>
-        <div className="grid py-4">
+        <div className="grid gap-4 py-4">
           <form
-            className="w-full flex flex-col gap-2"
-            onSubmit={handleSubmit((data) => {
-              console.log(data);
-              handleEdit(teller.id, data);
-            })}
+            id="add-teller-form"
+            className="w-full"
+            onSubmit={handleSubmit(onAddSubmit)}
           >
             <div className="flex flex-col items-baseline justify-between">
               <label className="w-1/3 text-[15px] font-medium leading-[35px] ">
@@ -63,10 +70,25 @@ export default function EditTellerModal({
                 {...register("username", {
                   required: "Tên tài khoản không thể để trống",
                 })}
-                required
               />
               <div className="text-red-500 text-end text-[13px]">
                 {errors.username?.message}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-baseline justify-between">
+              <label className="w-1/3 text-[15px] font-medium leading-[35px] ">
+                Mật khẩu
+              </label>
+              <input
+                type="password"
+                className="h-9 px-2 outline-none border-slate-400 border rounded-sm w-full"
+                {...register("password", {
+                  required: "Mật khẩu không thể để trống",
+                })}
+              />
+              <div className="text-red-500 text-end text-[13px]">
+                {errors.password?.message}
               </div>
             </div>
 
@@ -80,7 +102,6 @@ export default function EditTellerModal({
                 {...register("fullName", {
                   required: "Họ tên không thể để trống",
                 })}
-                required
               />
               <div className="text-red-500 text-end text-[13px]">
                 {errors.fullName?.message}
@@ -102,7 +123,6 @@ export default function EditTellerModal({
                   },
                 })}
                 placeholder="000-000-0000"
-                required
               />
               <div className="text-red-500 text-end text-[13px]">
                 {errors.phone?.message}
@@ -122,7 +142,6 @@ export default function EditTellerModal({
                     message: "Email không hợp lệ",
                   },
                 })}
-                required
               />
               <div className="text-red-500 text-end text-[13px]">
                 {errors.email?.message}
