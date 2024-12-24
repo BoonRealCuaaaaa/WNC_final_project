@@ -4,6 +4,7 @@ import Decimal from "decimal.js";
 import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
+import "dotenv/config";
 
 export const generateOtpForDebit = async (req, res) => {
   const { debitId } = req.body;
@@ -235,3 +236,51 @@ export const getTransactionHistory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const generateOtpForBanking = async (req, res) => {
+  const { desBankName, desAccountNumber, amount, content, feeMethod } = req.body;
+
+  const customer = await models.Customer.findOne({
+    where: { userId: req.user.id },
+  });
+  
+  const otp = generateOTP();
+
+  let receiver;
+
+  if (bankName) {
+    //Local banking
+    receiver = await models.Paymentaccount.findOne({
+      where: { accountNumber },
+    });
+  }
+  else {
+    //Interbank banking
+  }
+
+  if (!receiver) {
+    return res.status(404).json({ message: "Receiver not found" });
+  }
+
+  const sender = await models.Paymentaccount.findOne({
+    where: { customerId: customer.id },
+  });
+
+  if (sender.balance < amount) {
+    return res.status(400).json({ message: "Insufficient balance" });
+  }
+
+  const paymentTransaction = await models.Paymenttransaction.create({
+    amount,
+    content,
+    otp,
+    otpExpiredAt: new Date(Date.now() + 10 * 60 * 1000),
+    status: 'ĐANG XỬ LÝ',
+    srcAccount: sender.accountNumber,
+    srcBankName: process.env.BANK_NAME,
+    desAccount: desAccountNumber,
+    desBankName: desBankName
+  })
+
+  return res.status(201).json({ message: "Payment Transaction created" });
+}

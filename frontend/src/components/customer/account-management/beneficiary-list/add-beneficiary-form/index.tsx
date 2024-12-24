@@ -135,7 +135,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                             name="bankName"
                             required
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="max-w-[200px]">
                                     <FormLabel>Ngân hàng</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
@@ -161,7 +161,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                                 <FormItem>
                                     <FormLabel>Số tài khoản</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Nhập STK..." {...field} />
+                                        <Input placeholder="Nhập STK..." {...field} type="number"/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -183,7 +183,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                     />
                 </FormMainContent>
                 <DialogFooter>
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit">Thêm người thụ hưởng mới</Button>
                 </DialogFooter>
 
             </form>

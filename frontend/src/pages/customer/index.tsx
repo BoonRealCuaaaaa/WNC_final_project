@@ -15,7 +15,7 @@ const CustomerLayout = () => {
           Quản lý tài khoản
         </NavLink>
         <NavLink
-          to="/abc"
+          to="/banking"
           className={({ isActive }) =>
             isActive ? "nav-link-active" : "nav-link-inactive"
           }

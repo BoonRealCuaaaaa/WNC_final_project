@@ -131,7 +131,7 @@ export default function EditBeneficiaryForm({beneficiary, onSuccess}: Props) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="dialog-form">
                 <DialogHeader>
                     <DialogTitle>
-                        Thêm người thụ hưởng
+                        Chỉnh sửa thông tin thụ hưởng
                     </DialogTitle>
                 </DialogHeader>
                 <FormMainContent>
@@ -167,7 +167,7 @@ export default function EditBeneficiaryForm({beneficiary, onSuccess}: Props) {
                                 <FormItem>
                                     <FormLabel>Số tài khoản</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Nhập STK..." {...field} />
+                                        <Input placeholder="Nhập STK..." {...field} type="number" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -189,7 +189,8 @@ export default function EditBeneficiaryForm({beneficiary, onSuccess}: Props) {
                     />
                 </FormMainContent>
                 <DialogFooter>
-                    <Button type="submit">Submit</Button>
+                    
+                    <Button type="submit">Lưu</Button>
                 </DialogFooter>
 
             </form>
