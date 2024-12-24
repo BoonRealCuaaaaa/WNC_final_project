@@ -4,6 +4,7 @@ import Decimal from "decimal.js";
 import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
+import { INTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
 import "dotenv/config";
 
 export const generateOtpForDebit = async (req, res) => {
@@ -104,7 +105,12 @@ export const payDebit = async (req, res) => {
 
   const debtorBalance = new Decimal(debtorPaymentAccount.balance);
   const creditorBalance = new Decimal(creditorPaymentAccount.balance);
-  const amount = new Decimal(debit.amount);
+  const totalAmount = Number(debit.amount) + INTERNAL_TRANSACTION_FEE;
+  const amount = new Decimal(totalAmount);
+
+  if (debtorBalance.lessThan(amount)) {
+    return res.status(400).json({ message: "Not enough balance" });
+  }
 
   debtorPaymentAccount.balance = debtorBalance.minus(amount).toString();
   creditorPaymentAccount.balance = creditorBalance.plus(amount).toString();

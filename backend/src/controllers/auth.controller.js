@@ -41,7 +41,14 @@ export const login = async (req, res) => {
     refreshToken = refreshToken.refreshToken;
   }
 
-  return res.status(200).json({ accessToken, refreshToken, role: user.role });
+  return res
+    .status(200)
+    .json({
+      accessToken,
+      refreshToken,
+      role: user.role,
+      username: user.username,
+    });
 };
 
 export const refreshToken = async (req, res) => {

@@ -5,13 +5,22 @@ import avatarImage from "@/assets/avatar.jpg";
 import { Description } from "../ui/description";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Dropdown } from "antd";
-import { removeTokens } from "@/utils/auth";
+import { getRole, getUserName, removeTokens } from "@/utils/auth";
+import NotificationBell from "../customer/notification";
 
 const Header = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
   const navigate = useNavigate();
+  const roleValue = getRole().toLowerCase();
+  const role =
+    roleValue === "admin"
+      ? "Quản trị viên"
+      : roleValue === "teller"
+      ? "Giao dịch viên"
+      : "Khách hàng";
+  const userName = getUserName();
 
   const onLogout = () => {
     removeTokens();
@@ -43,10 +52,12 @@ const Header = React.forwardRef<
           {children}
         </div>
         <div className="flex items-center gap-x-4">
+          <NotificationBell />
           <div className="flex flex-col gap-y-1 items-end">
-            <Description>Khách hàng</Description>
-            <div className="font-medium text-[14px]/[14px]">Nguyễn Văn A</div>
+            <Description>{role}</Description>
+            <div className="font-medium text-[14px]/[14px]">{userName}</div>
           </div>
+
           <Dropdown menu={{ items }} trigger={["click"]}>
             <Avatar>
               <AvatarImage src={avatarImage} />
