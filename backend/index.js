@@ -4,6 +4,7 @@ import cors from "cors";
 import authRouter from "./src/routes/auth.route.js";
 import customerRouter from "./src/routes/customer.route.js";
 import debitRouter from "./src/routes/debit.route.js";
+import interbankRouter from "./src/routes/interbank.route.js";
 import notificationRouter from "./src/routes/notification.route.js";
 import beneficiariesRouter from "./src/routes/beneficiaries.route.js";
 import paymentTransactionRouter from "./src/routes/payment-transaction.route.js";
@@ -23,6 +24,7 @@ initializeSocket(server);
 const port = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
+app.use("/interbanks", interbankRouter);
 app.use("/notification", verifyToken, notificationRouter);
 app.use("/customer", verifyToken, customerRouter);
 app.use("/debits", verifyToken, debitRouter);

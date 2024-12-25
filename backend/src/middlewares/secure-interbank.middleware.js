@@ -10,7 +10,7 @@ export const validRequest = async (req, res, next) => {
     if (!bank) {
       return res.status(403).json({ message: "Unauthorized bank" });
     }
-
+    
     const maxPeriod = 5 * 60; // seconds
     if (Math.floor((Date.now() - time) / 1000) > maxPeriod) {
       return res.status(400).json({ message: "Request expired" });
@@ -21,12 +21,13 @@ export const validRequest = async (req, res, next) => {
     if (token !== verifyToken) {
       return res.status(400).json({ message: "Data tampering detected" });
     }
+
     req['partenerPublicKey'] = bank.partenerPublicKey;
+
+    return next();
   } catch (error) {
     return res.status(400).json({ message: error.message });
   }
-
-  return next();
 };
 
 export const validSignature = async (req, res, next) => {
