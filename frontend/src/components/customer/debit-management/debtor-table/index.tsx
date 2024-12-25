@@ -1,34 +1,14 @@
-import { Button } from "@/components/shared/button";
-import { Avatar, Input, Steps, Table, Tag } from "antd";
-import { CheckSquare, XLg } from "react-bootstrap-icons";
+import { Avatar, Input, Table, Tag } from "antd";
 
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/shared/alert-dialog";
 import { useState } from "react";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
-import {
-  cancelDebitApi,
-  generateDebitOtpApi,
-  getReceivedDebitApi,
-  payDebitApi,
-} from "@/api/debits.api";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
+import { getReceivedDebitApi } from "@/api/debits.api";
+import { useQuery } from "@tanstack/react-query";
+
+import PaymentDialog from "./payment-dialog";
+import CancelDialog from "./cancel-dialog";
 
 const DebtorTable = () => {
-  const { toast } = useToast();
-  const [otp, setOtp] = useState("");
-  const [openPaymentModal, setOpenPaymentModal] = useState(false);
-  const [openCancelModal, setOpenCancelModal] = useState(false);
   const {
     data: debits,
     isLoading: isFetchingDebits,
@@ -37,74 +17,6 @@ const DebtorTable = () => {
     queryKey: ["debit-creditor"],
     queryFn: getReceivedDebitApi,
   });
-
-  const { mutate: generateOtp } = useMutation({
-    mutationFn: generateDebitOtpApi,
-  });
-  const { mutate: payDebit } = useMutation({
-    mutationFn: payDebitApi,
-    onSuccess: () => {
-      refetchDebits();
-      setOtp("");
-      setCurrentStep(0);
-      toast({
-        title: "Thanh toán nợ thành công",
-        description: "Bạn đã thanh toán nợ thành công",
-      });
-      setOpenPaymentModal(false);
-    },
-    onError: () => {
-      setOtp("");
-      setCurrentStep(0);
-      toast({
-        title: "Thanh toán nợ thất bại",
-        description: "Bạn đã thanh toán nợ thất bại",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const { mutate: cancelDebit } = useMutation({
-    mutationFn: cancelDebitApi,
-    onSuccess: () => {
-      refetchDebits();
-      setValueCancel("cancelReason", "");
-      toast({
-        title: "Hủy nhắc nợ thành công",
-        description: "Bạn đã hủy nhắc nợ thành công",
-      });
-    },
-  });
-
-  const {
-    register: registerCancel,
-    handleSubmit: handleSubmitCancel,
-    setValue: setValueCancel,
-  } = useForm({
-    defaultValues: {
-      id: "",
-      cancelReason: "",
-    },
-  });
-
-  const onDeleteDebit = (data) => {
-    cancelDebit({ debitId: data.id, cancelReason: data.cancelReason });
-  };
-
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const handlePayDebit = (debitId) => {
-    if (otp.length < 6) {
-      toast({
-        title: "Lỗi",
-        description: "Vui lòng nhập đủ 6 số OTP",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    payDebit({ debitId, otp });
-  };
 
   const columns = [
     {
@@ -160,8 +72,8 @@ const DebtorTable = () => {
     },
     {
       title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      dataIndex: "content",
+      key: "content",
       ellipsis: true,
     },
     {
@@ -169,119 +81,9 @@ const DebtorTable = () => {
       key: "action",
       render: (_, record) =>
         record.status == "Chưa thanh toán" && (
-          <div className="flex justify-start">
-            <AlertDialog
-              open={openPaymentModal}
-              onOpenChange={setOpenPaymentModal}
-            >
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" className="p-0">
-                  <CheckSquare />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Thanh toán nợ</AlertDialogTitle>
-                  <AlertDialogDescription asChild>
-                    <div className="flex flex-col space-y-5">
-                      <Steps current={currentStep} direction="horizontal">
-                        <Steps.Step title="Thông tin nhắc nợ" />
-                        <Steps.Step title="Xác thực OTP" />
-                      </Steps>
-                      {currentStep === 0 && (
-                        <div className="flex flex-col space-y-3 ">
-                          <div className="self-center">
-                            {`Xác nhận thanh toán nợ với ${
-                              record.fullName
-                            }, số tiền ${formatCurrency(record.amount)}`}
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 1 && (
-                        <div className="flex flex-col space-y-5">
-                          <div className="self-center">{`Nhập OTP để xác thực thanh toán nợ với với ${
-                            record.fullName
-                          } số tiền ${formatCurrency(record.amount)}`}</div>
-                          <div className="w-full flex justify-center self-center">
-                            <Input.OTP
-                              onInput={(text) => {
-                                console.log(text);
-                                setOtp(text.join(""));
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel
-                    onClick={() => {
-                      setCurrentStep(0);
-                    }}
-                  >
-                    Cancel
-                  </AlertDialogCancel>
-                  {currentStep === 0 ? (
-                    <Button
-                      onClick={() => {
-                        generateOtp({ debitId: record.id });
-                        setCurrentStep(1);
-                      }}
-                    >
-                      Tiếp tục
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        handlePayDebit(record.id);
-                      }}
-                    >
-                      Hoàn tất
-                    </Button>
-                  )}
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog
-              open={openCancelModal}
-              onOpenChange={setOpenCancelModal}
-            >
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost">
-                  <XLg />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Hủy nhắc nợ </AlertDialogTitle>
-                  <AlertDialogDescription asChild>
-                    <form
-                      onSubmit={handleSubmitCancel((data) =>
-                        onDeleteDebit({ ...data, id: record.id })
-                      )}
-                    >
-                      <div className="flex flex-col space-y-5">
-                        <div>{`Bạn có chắc chắn muốn hủy nhắc nợ với ${record.fullName} không?`}</div>
-                        <textarea
-                          className="border border-gray-300 inline-flex h-20 w-full resize-none appearance-none items-center justify-center rounded-lg p-2.5 text-[15px] leading-none outline-none focus:shadow-[0_0_0_2px_black]"
-                          required
-                          placeholder="Nhập lý do nhắc nợ"
-                          {...registerCancel("cancelReason")}
-                        />
-                      </div>
-                      <AlertDialogFooter className="mt-5">
-                        <AlertDialogCancel>Trở về</AlertDialogCancel>
-                        <Button type="submit">Hủy nhác nợ</Button>
-                      </AlertDialogFooter>
-                    </form>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-              </AlertDialogContent>
-            </AlertDialog>
+          <div className="flex justify-start space-x-3">
+            <PaymentDialog record={record} refetchDebits={refetchDebits} />
+            <CancelDialog record={record} refetchDebits={refetchDebits} />
           </div>
         ),
     },

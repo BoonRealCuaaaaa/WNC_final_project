@@ -6,13 +6,14 @@ import customerRouter from "./src/routes/customer.route.js";
 import debitRouter from "./src/routes/debit.route.js";
 import interbankRouter from "./src/routes/interbank.route.js";
 import notificationRouter from "./src/routes/notification.route.js";
-import beneficiariesRouter from "./src/routes/beneficiaries.route.js";
+import beneficiaryRouter from "./src/routes/beneficiary.route.js";
 import paymentTransactionRouter from "./src/routes/payment-transaction.route.js";
+import tellerRouter from "./src/routes/teller.route.js";
+import partnerRouter from "./src/routes/partner.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
-import { Server } from "socket.io";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
-import { sendOtpMail } from "./src/services/email.js";
+import { verifyTellerAccount } from "./src/middlewares/verify-teller-account.middleware.js";
 
 const app = express();
 app.use(express.json());
@@ -28,14 +29,10 @@ app.use("/interbanks", interbankRouter);
 app.use("/notification", verifyToken, notificationRouter);
 app.use("/customer", verifyToken, customerRouter);
 app.use("/debits", verifyToken, debitRouter);
-app.use("/beneficiaries", verifyToken, beneficiariesRouter);
+app.use("/beneficiaries", verifyToken, beneficiaryRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
-
-// Example of protected API
-let cnt = 0;
-app.get("/hello", verifyToken, (req, res) => {
-  return res.send(`Hello world ${cnt++}`);
-});
+app.use("/teller", verifyToken, verifyTellerAccount, tellerRouter);
+app.use("/partners", verifyToken, partnerRouter);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);

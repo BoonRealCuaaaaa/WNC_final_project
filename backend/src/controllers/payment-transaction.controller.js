@@ -1,8 +1,11 @@
 import { models } from "../lib/utils/database/index.js";
 import { generateOTP } from "../lib/utils/otp/index.js";
 import Decimal from "decimal.js";
+import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
+import { INTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
+import "dotenv/config";
 
 export const generateOtpForDebit = async (req, res) => {
   const { debitId } = req.body;
@@ -102,7 +105,12 @@ export const payDebit = async (req, res) => {
 
   const debtorBalance = new Decimal(debtorPaymentAccount.balance);
   const creditorBalance = new Decimal(creditorPaymentAccount.balance);
-  const amount = new Decimal(debit.amount);
+  const totalAmount = Number(debit.amount) + INTERNAL_TRANSACTION_FEE;
+  const amount = new Decimal(totalAmount);
+
+  if (debtorBalance.lessThan(amount)) {
+    return res.status(400).json({ message: "Not enough balance" });
+  }
 
   debtorPaymentAccount.balance = debtorBalance.minus(amount).toString();
   creditorPaymentAccount.balance = creditorBalance.plus(amount).toString();
@@ -125,3 +133,160 @@ export const payDebit = async (req, res) => {
 
   return res.status(200).json({ message: "Debit paid" });
 };
+
+export const getTransactionHistory = async (req, res) => {
+  let id;
+  if (req.user.role === "TELLER") {
+    id = req.params.id;
+  }
+  if (req.user.role === "CUSTOMER") {
+    id = req.user.id;
+  }
+  try {
+    const account = await models.Paymentaccount.findOne({
+      where: { customerId: id },
+      attributes: ["accountNumber"],
+    });
+
+    if (!account) {
+      return res.status(404).json({ error: "Payment account not found." });
+    }
+
+    const accountNumber = account.accountNumber;
+
+    const transactions = await models.Paymenttransaction.findAll({
+      where: {
+        [Op.or]: [{ srcAccount: accountNumber }, { desAccount: accountNumber }],
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    const transactionIds = transactions.map((tx) => tx.id);
+
+    const debits = await models.Debits.findAll({
+      where: {
+        paymentTransactionsId: {
+          [Op.in]: transactionIds,
+        },
+      },
+      attributes: ["paymentTransactionsId"],
+    });
+
+    // Extract unique related account numbers
+    const relatedAccountNumbers = transactions.map((tx) =>
+      tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount
+    );
+    const uniqueRelatedAccounts = [...new Set(relatedAccountNumbers)];
+
+    // Bulk fetch related Customers
+    const relatedCustomers = await models.Customer.findAll({
+      include: {
+        model: models.Paymentaccount,
+        as: "paymentaccounts",
+        where: { accountNumber: uniqueRelatedAccounts },
+        attributes: [],
+      },
+      attributes: ["id", "fullName"],
+    });
+
+    // Bulk fetch related Beneficiaries
+    const relatedBeneficiaries = await models.Beneficiaries.findAll({
+      where: {
+        accountNumber: uniqueRelatedAccounts,
+        customerId: id,
+      },
+      attributes: ["accountNumber", "name"],
+    });
+
+    // Create maps for quick lookup
+    const customerMap = new Map();
+    relatedCustomers.forEach((customer) => {
+      customer.paymentaccounts.forEach((account) => {
+        customerMap.set(account.accountNumber, customer.fullName);
+      });
+    });
+
+    const beneficiaryMap = new Map();
+    relatedBeneficiaries.forEach((beneficiary) => {
+      beneficiaryMap.set(beneficiary.accountNumber, beneficiary.name);
+    });
+
+    // Assemble transaction history with type and related person
+    const transactionsWithType = transactions.map((tx) => {
+      const isDebit = debits.some(
+        (debit) => debit.paymentTransactionsId === tx.id
+      );
+      const relatedAccount =
+        tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount;
+      const relatedPerson =
+        customerMap.get(relatedAccount) ||
+        beneficiaryMap.get(relatedAccount) ||
+        "Unknown";
+
+      return {
+        ...tx.dataValues,
+        type: isDebit
+          ? "Thanh toán nhắc nợ"
+          : tx.srcAccount === accountNumber
+          ? "Chuyển khoản"
+          : "Nhận tiền",
+        relatedPerson,
+        accountNumber:
+          tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount,
+        customerAccountNumber: accountNumber,
+      };
+    });
+
+    res.status(200).json(transactionsWithType);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const generateOtpForBanking = async (req, res) => {
+  const { desBankName, desAccountNumber, amount, content, feeMethod } = req.body;
+
+  const customer = await models.Customer.findOne({
+    where: { userId: req.user.id },
+  });
+  
+  const otp = generateOTP();
+
+  let receiver;
+
+  if (bankName) {
+    //Local banking
+    receiver = await models.Paymentaccount.findOne({
+      where: { accountNumber },
+    });
+  }
+  else {
+    //Interbank banking
+  }
+
+  if (!receiver) {
+    return res.status(404).json({ message: "Receiver not found" });
+  }
+
+  const sender = await models.Paymentaccount.findOne({
+    where: { customerId: customer.id },
+  });
+
+  if (sender.balance < amount) {
+    return res.status(400).json({ message: "Insufficient balance" });
+  }
+
+  const paymentTransaction = await models.Paymenttransaction.create({
+    amount,
+    content,
+    otp,
+    otpExpiredAt: new Date(Date.now() + 10 * 60 * 1000),
+    status: 'ĐANG XỬ LÝ',
+    srcAccount: sender.accountNumber,
+    srcBankName: process.env.BANK_NAME,
+    desAccount: desAccountNumber,
+    desBankName: desBankName
+  })
+
+  return res.status(201).json({ message: "Payment Transaction created" });
+}

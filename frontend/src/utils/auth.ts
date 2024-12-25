@@ -2,6 +2,7 @@ export const AUTH_KEY = {
    ACCESS_TOKEN: "app_access_token",
    REFRESH_TOKEN: "app_refresh_token",
    ROLE: "app_role",
+   USER_NAME: "app_user_name",
 };
 
 export const setAccessToken = (token: string) => {
@@ -28,8 +29,17 @@ export const getRole = () => {
    return localStorage.getItem(AUTH_KEY.ROLE);
 };
 
+export const setUserName = (userName: string) => {
+   localStorage.setItem(AUTH_KEY.USER_NAME, userName);
+};
+
+export const getUserName = () => {
+   return localStorage.getItem(AUTH_KEY.USER_NAME);
+};
+
 export const removeTokens = () => {
    localStorage.removeItem(AUTH_KEY.ACCESS_TOKEN);
    localStorage.removeItem(AUTH_KEY.REFRESH_TOKEN);
    localStorage.removeItem(AUTH_KEY.ROLE);
+   localStorage.removeItem(AUTH_KEY.USER_NAME);
 };

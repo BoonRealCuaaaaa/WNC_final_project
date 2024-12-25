@@ -2,19 +2,18 @@ import { getAccessToken, getRole } from "@/utils/auth";
 import { Navigate, Outlet } from "react-router-dom";
 
 const AuthGuard = (props) => {
-   const { requiredRole } = props;
-   const userRole = getRole();
-   const accessToken = getAccessToken();
+  const { requiredRole } = props;
+  const userRole = getRole();
+  const accessToken = getAccessToken();
 
-   if (!accessToken || accessToken == "") {
-      return <Navigate to="/login" />;
-   }
+  if (!accessToken || accessToken == "") {
+    return <Navigate to="/auth/login" />;
+  }
+  if (userRole.toLowerCase() !== requiredRole.toLowerCase()) {
+    return <Navigate to="/401" />;
+  }
 
-   if (userRole.toLowerCase() !== requiredRole.toLowerCase()) {
-      return <Navigate to="/401" />;
-   }
-
-   return <Outlet />;
+  return <Outlet />;
 };
 
 export default AuthGuard;

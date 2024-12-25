@@ -6,12 +6,12 @@ import {
   getNotificationsApi,
   readNotificationApi,
 } from "@/api/notification.api";
-import { Separator } from "@/components/shared/separator";
+import { Separator } from "@/components/ui/separator";
 import { connectSocket, onNotify } from "@/shared/lib/services/socket";
 import { Check2 } from "react-bootstrap-icons";
 import { Popover } from "@radix-ui/react-popover";
-import { PopoverContent, PopoverTrigger } from "@/components/shared/popover";
-import { Button } from "@/components/shared/button";
+import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 const NotificationBell = () => {
   const queryClient = useQueryClient();
