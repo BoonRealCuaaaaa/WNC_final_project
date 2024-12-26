@@ -20,15 +20,25 @@ export const tradeInterbankSchema = {
   additionalProperties: false,
 };
 
-export const searchAccountsSchema = {
+export const searchInterbankAccountSchema = {
+  type: "object",
+  properties: {
+    bankName: { type: "string" },
+    accountNumber: { type: "string" },
+  },
+  required: ["bankName", "accountNumber"],
+  additionalProperties: false,
+};
+
+export const handleSearchInterbankAccountSchema = {
   type: "object",
   properties: {
     payload: {
       type: "object",
       properties: {
-        accountNumber: { type: "number" },
+        accountNumber: { type: "string" },
       },
-      required: ["amount", "paymentTransactionId", "otp"],
+      required: ["accountNumber"],
       additionalProperties: false,
     },
     time: { type: "number" },

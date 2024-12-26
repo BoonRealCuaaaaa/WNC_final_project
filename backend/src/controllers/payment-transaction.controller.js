@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
-import { INTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
+import { INTERNAL_TRANSACTION_FEE, EXTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
 import "dotenv/config";
 
 export const generateOtpForDebit = async (req, res) => {
@@ -244,7 +244,7 @@ export const getTransactionHistory = async (req, res) => {
 };
 
 export const generateOtpForBanking = async (req, res) => {
-  const { desBankName, desAccountNumber, amount, content, feeMethod } = req.body;
+  const { desBankName, desAccountNumber, amount, content } = req.body;
 
   const customer = await models.Customer.findOne({
     where: { userId: req.user.id },
@@ -253,6 +253,7 @@ export const generateOtpForBanking = async (req, res) => {
   const otp = generateOTP();
 
   let receiver;
+  let interbank;
 
   if (bankName) {
     //Local banking
@@ -262,9 +263,10 @@ export const generateOtpForBanking = async (req, res) => {
   }
   else {
     //Interbank banking
+    interbank = await models.Partners({where: {bankName: desBankName}});
   }
 
-  if (!receiver) {
+  if (!receiver && !interbank) {
     return res.status(404).json({ message: "Receiver not found" });
   }
 
@@ -288,5 +290,80 @@ export const generateOtpForBanking = async (req, res) => {
     desBankName: desBankName
   })
 
-  return res.status(201).json({ message: "Payment Transaction created" });
+  sendOtpMail(customer.email, otp, "OTP thanh toán chuyển tiền");
+
+  return res.status(201).json({ message: "success", transactionId: paymentTransaction.id, fee: receiver ? INTERNAL_TRANSACTION_FEE : EXTERNAL_TRANSACTION_FEE });
 }
+
+
+export const banking = async (req, res) => {
+  const { transactionId, otp } = req.body;
+
+  const paymentTransaction = await models.Paymenttransaction.findOne({
+    where: { id: transactionId },
+  });
+  
+  if (!paymentTransaction) {
+    return res.status(404).json({ message: "Payment transaction not found" });
+  }
+
+  if (paymentTransaction.otp !== otp) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  if (paymentTransaction.otpExpiredAt < new Date()) {
+    return res.status(400).json({ message: "OTP expired" });
+  }
+
+  //TODO: refactor
+  const sender = await models.Customer.findOne({
+    where: { userId: req.user.id },
+  });
+
+  const receiver = await models.Customer.findOne({
+    where: { id: paymentTransaction.desAccount },
+  });
+
+  const senderPaymentAccount = await models.Paymentaccount.findOne({
+    where: { customerId: sender.id },
+  });
+  const receiverPaymentAccount = await models.Paymentaccount.findOne({
+    where: { customerId: receiver.id },
+  });
+
+  const senderBalance = new Decimal(senderPaymentAccount.balance);
+  const receiverBalance = new Decimal(receiverPaymentAccount.balance);
+
+  senderPaymentAccount.balance = senderBalance.minus(paymentTransaction.amount).toString();
+  receiverPaymentAccount.balance = receiverBalance.plus(paymentTransaction.amount).toString();
+
+  paymentTransaction.status = "Đã thanh toán";
+  senderPaymentAccount.save();
+  receiverPaymentAccount.save();
+  paymentTransaction.save();
+
+  return res.status(200).json({ message: "success" });
+};
+
+export const searchAccount = async (req, res) => {
+  const accountNumber = req.body.accountNumber || '';
+
+  try {
+    const account = await models.Paymentaccount.findOne({
+      where: { accountNumber: accountNumber },
+      include: [
+        {
+          model: models.Customer,
+          as: 'customer', 
+          required: true,
+        },
+      ],
+    });
+
+    console.log("customer::", account?.customer);
+    return res.status(200).json({accountNumber, fullName: account ? account.customer.fullName : ''});
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({accountNumber, fullName: ''});
+  }
+};
