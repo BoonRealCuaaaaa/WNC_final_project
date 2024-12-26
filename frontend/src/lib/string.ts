@@ -32,9 +32,14 @@ function formatPhoneNumber(input: string): string {
     }
 }
 
+function formatCurrency(input: number): string {
+    return thoudsandsSeparator(input) + "đ";
+}
+
 export {
     formatCardNumber,
     getName,
     thoudsandsSeparator,
     formatPhoneNumber,
+    formatCurrency
 }

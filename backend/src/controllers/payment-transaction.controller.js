@@ -4,7 +4,7 @@ import Decimal from "decimal.js";
 import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
-import { INTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
+import { EXTERNAL_TRANSACTION_FEE, INTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
 import "dotenv/config";
 
 export const generateOtpForDebit = async (req, res) => {
@@ -123,9 +123,8 @@ export const payDebit = async (req, res) => {
 
   const notification = await models.Notification.create({
     title: "Đã thanh toán nợ",
-    message: `${
-      debtor.fullName
-    } đã thanh toán nợ cho bạn với số tiền ${amount.toString()}`,
+    message: `${debtor.fullName
+      } đã thanh toán nợ cho bạn với số tiền ${amount.toString()}`,
     customerId: debit.creditor,
     isRead: false,
   });
@@ -228,8 +227,8 @@ export const getTransactionHistory = async (req, res) => {
         type: isDebit
           ? "Thanh toán nhắc nợ"
           : tx.srcAccount === accountNumber
-          ? "Chuyển khoản"
-          : "Nhận tiền",
+            ? "Chuyển khoản"
+            : "Nhận tiền",
         relatedPerson,
         accountNumber:
           tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount,
@@ -243,29 +242,41 @@ export const getTransactionHistory = async (req, res) => {
   }
 };
 
-export const generateOtpForBanking = async (req, res) => {
-  const { desBankName, desAccountNumber, amount, content, feeMethod } = req.body;
+export const generateOtpForBankTransfer = async (req, res) => {
+  const { desBankName, desAccount, amount, content, feePayer } = req.body;
 
   const customer = await models.Customer.findOne({
     where: { userId: req.user.id },
   });
-  
+
   const otp = generateOTP();
 
-  let receiver;
+  let receiver, fee;
 
-  if (bankName) {
+  if (desBankName === process.env.BANK_NAME) {
     //Local banking
     receiver = await models.Paymentaccount.findOne({
-      where: { accountNumber },
+      where: { accountNumber: desAccount },
     });
+    fee = INTERNAL_TRANSACTION_FEE
   }
   else {
     //Interbank banking
+    return res.status(400).json({ message: "Chưa hỗ trợ" });
+    fee = EXTERNAL_TRANSACTION_FEE
   }
 
   if (!receiver) {
-    return res.status(404).json({ message: "Receiver not found" });
+    return res.status(404).json({ message: "Người nhận không tồn tại" });
+  }
+  if (receiver.customerId === customer.id) {
+    return res.status(400).json({ message: "Không thể chuyển khoản cho bản thân" });
+  }
+
+  const actualAmount = amount - (feePayer === "RECEIVER" ? fee : 0); //So tien nguoi nhan nhan duoc
+
+  if (actualAmount <= 0) {
+    return res.status(400).json({ message: "Số tiền chuyển thực tế sau phí phải lớn hơn 0đ" });
   }
 
   const sender = await models.Paymentaccount.findOne({
@@ -273,20 +284,109 @@ export const generateOtpForBanking = async (req, res) => {
   });
 
   if (sender.balance < amount) {
-    return res.status(400).json({ message: "Insufficient balance" });
+    return res.status(400).json({ message: "Số dư không đủ" });
   }
 
   const paymentTransaction = await models.Paymenttransaction.create({
-    amount,
+    amount: actualAmount,
     content,
     otp,
     otpExpiredAt: new Date(Date.now() + 10 * 60 * 1000),
-    status: 'ĐANG XỬ LÝ',
+    status: 'Chưa thanh toán',
     srcAccount: sender.accountNumber,
     srcBankName: process.env.BANK_NAME,
-    desAccount: desAccountNumber,
-    desBankName: desBankName
+    desAccount,
+    desBankName,
+    fee,
+    feePayer,
   })
 
-  return res.status(201).json({ message: "Payment Transaction created" });
+  sendOtpMail(customer.email, otp, "OTP xác thực chuyển khoản");
+
+  return res.status(200).json({ 
+    id: paymentTransaction.id,
+    amount: paymentTransaction.amount,
+    content: paymentTransaction.content,
+    desOwner: "Dai",
+    desAccount: paymentTransaction.desAccount,
+    desBankName: paymentTransaction.desBankName,
+    fee: paymentTransaction.fee,
+    feePayer: paymentTransaction.feePayer
+  });
+}
+
+export const payBankTransfer = async (req, res) => {
+  const {id, otp} = req.body;
+
+  const customer = await models.Customer.findOne({
+    where: { userId: req.user.id },
+  });
+
+  const sender = await models.Paymentaccount.findOne({
+    where: { customerId: customer.id},
+  });
+
+  const transaction = await models.Paymenttransaction.findOne({
+    where: { 
+      id: id,
+      srcAccount: sender.accountNumber
+     }
+  })
+
+  if (!transaction) {
+    return res.status(404).json({ message: "Giao dịch không hợp lệ" });
+  }
+
+  if (transaction.otp !== otp) {
+    return res.status(400).json({ message: "OTP không hợp lệ" });
+  }
+
+  const amount = new Number(transaction.amount);
+  const fee = new Number(transaction.fee);
+  let senderBalance = new Number(sender.balance);
+
+  if (amount + fee > senderBalance) {
+    return res.status(400).json({ message: "Số dư không đủ" });
+  }
+
+  let receiver;
+
+  if (transaction.desBankName === process.env.BANK_NAME) {
+    //Local banking
+    receiver = await models.Paymentaccount.findOne({
+      where: { accountNumber: transaction.desAccount },
+    });
+  }
+  else {
+    //Interbank banking
+    return res.status(400).json({ message: "Chưa hỗ trợ" });
+  }
+
+  if (!receiver) {
+    return res.status(404).json({ message: "Người nhận không tồn tại" });
+  }
+  if (receiver.customerId === customer.id) {
+    return res.status(400).json({ message: "Không thể chuyển khoản cho bản thân" });
+  }
+
+  let receiverBalance = new Number(receiver.balance);
+
+  //Start transfering
+  console.log({
+    senderBalance,
+    receiverBalance,
+    newSender: senderBalance - amount + fee,
+    newReceiver: receiverBalance + amount
+  })
+  senderBalance -= amount + fee;
+  sender.balance = senderBalance;
+  receiverBalance += amount;
+  receiver.balance = receiverBalance;
+  transaction.status = "Đã thanh toán";
+
+  sender.save();
+  receiver.save();
+  transaction.save();
+
+  return res.status(200).json({message: "Chuyển khoản thành cônng"});
 }

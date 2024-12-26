@@ -47,6 +47,14 @@ export default class Paymenttransaction extends Model {
           type: DataTypes.STRING(255),
           allowNull: true,
         },
+        fee: {
+          type: DataTypes.DECIMAL(15, 2),
+          allowNull: true,
+        },
+        feePayer: {
+          type: DataTypes.STRING(50),
+          allowNull: true,
+        },
       },
       {
         sequelize,
