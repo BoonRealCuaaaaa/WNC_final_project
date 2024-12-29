@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import ReactLoading from 'react-loading';
 
 import { cn } from "@/lib/utils"
 
@@ -55,4 +56,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants }
+const LoadingButton = React.forwardRef<
+  React.ElementRef<typeof Button>,
+  React.ComponentPropsWithoutRef<typeof Button> & {isLoading?: boolean}
+>
+(({ children, isLoading, ...props }, ref) => {
+  if (isLoading) return (
+    <Button ref={ref} {...props} disabled>
+      <ReactLoading type={"spin"} className="flex items-center justify-center" height={16} width={16}/>
+      {children}
+    </Button>
+  )
+  
+  return (
+    <Button ref={ref} {...props}>{children}</Button>
+  )
+})
+LoadingButton.displayName = "Button"
+
+export { Button, LoadingButton, buttonVariants }

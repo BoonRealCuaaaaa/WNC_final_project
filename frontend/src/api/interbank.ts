@@ -1,6 +1,6 @@
 import instance from "@/utils/axios";
 
-export const postSearchInterbankAccountsApi = async ({
+export const checkExistInterbankAccountsApi = async ({
   bankName,
   accountNumber,
 }: {

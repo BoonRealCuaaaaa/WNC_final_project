@@ -88,4 +88,13 @@
   .card-form {
     @apply flex flex-col gap-y-6;
   }
+  .static-field {
+    @apply flex flex-col gap-y-2;
+  }
+  .static-field-label {
+    @apply text-sm text-muted-foreground;
+  }
+  .static-field-value {
+    @apply text-[14px]/[14px];
+  }
 }

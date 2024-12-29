@@ -1,14 +1,13 @@
-export const tradeInterbankSchema = {
+export const handleTradeInterbankSchema = {
   type: "object",
   properties: {
     payload: {
       type: "object",
       properties: {
         amount: { type: "number" },
-        otp: { type: "string" },
-        paymentTransactionId: { type: "number" },
+        accountNumber: { type: "string" },
       },
-      required: ["amount", "paymentTransactionId", "otp"],
+      required: ["amount", "accountNumber"],
       additionalProperties: false,
     },
     time: { type: "number" },

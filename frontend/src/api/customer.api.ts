@@ -22,3 +22,17 @@ export const changePasswordApi = async ({ oldPassword, newPassword }) => {
     newPassword,
   });
 };
+
+export const bankTransferApi = async ({amount, content, desAccount, desBankName, feePayer}) => {
+  console.log(desBankName);
+  return instance.post("/payment-transaction/bank-transfer", {
+    amount, content, desAccount, desBankName, feePayer
+  })
+}
+
+export const payBankTransferApi = async ({id, otp}) => {
+  console.log({id, otp});
+  return instance.post("/payment-transaction/bank-transfer/pay", {
+    id, otp
+  })
+}

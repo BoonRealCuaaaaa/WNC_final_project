@@ -4,8 +4,12 @@ import Decimal from "decimal.js";
 import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
-import { INTERNAL_TRANSACTION_FEE, EXTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
+import {
+  INTERNAL_TRANSACTION_FEE,
+  EXTERNAL_TRANSACTION_FEE,
+} from "../constants/transaction-fee.js";
 import "dotenv/config";
+import {PGPPayTransferApi} from "./interbank.controller.js";
 
 export const generateOtpForDebit = async (req, res) => {
   const { debitId } = req.body;
@@ -243,127 +247,188 @@ export const getTransactionHistory = async (req, res) => {
   }
 };
 
-export const generateOtpForBanking = async (req, res) => {
-  const { desBankName, desAccountNumber, amount, content } = req.body;
+export const generateOtpForBankTransfer = async (req, res) => {
+  const { desBankName, desAccount, amount, content, feePayer } = req.body;
 
   const customer = await models.Customer.findOne({
     where: { userId: req.user.id },
   });
-  
+
   const otp = generateOTP();
 
-  let receiver;
-  let interbank;
+  let receiver, interbank, fee;
 
-  if (bankName) {
+  if (desBankName === process.env.BANK_NAME) {
     //Local banking
     receiver = await models.Paymentaccount.findOne({
-      where: { accountNumber },
+      where: { accountNumber: desAccount },
     });
-  }
-  else {
+    fee = INTERNAL_TRANSACTION_FEE;
+  } else {
     //Interbank banking
-    interbank = await models.Partners({where: {bankName: desBankName}});
+    interbank = await models.Partners.findOne({
+      where: { bankName: desBankName },
+    });
+
+    fee = EXTERNAL_TRANSACTION_FEE;
   }
 
   if (!receiver && !interbank) {
     return res.status(404).json({ message: "Receiver not found" });
   }
 
+  if (receiver && receiver.customerId === customer.id) {
+    return res
+      .status(400)
+      .json({ message: "Không thể chuyển khoản cho bản thân" });
+  }
+
+  const actualAmount = amount - (feePayer === "RECEIVER" ? fee : 0); //So tien nguoi nhan nhan duoc
+
+  if (actualAmount <= 0) {
+    return res
+      .status(400)
+      .json({ message: "Số tiền chuyển thực tế sau phí phải lớn hơn 0đ" });
+  }
+
+  const sender = await models.Paymentaccount.findOne({
+    where: { customerId: customer.id },
+    include: [{ model: models.Customer, as: "customer" }],
+  });
+
+  if (sender.balance < amount) {
+    return res.status(400).json({ message: "Số dư không đủ" });
+  }
+
+  const paymentTransaction = await models.Paymenttransaction.create({
+    amount: actualAmount,
+    content,
+    otp,
+    otpExpiredAt: new Date(Date.now() + 10 * 60 * 1000),
+    status: "Chưa thanh toán",
+    srcAccount: sender.accountNumber,
+    srcBankName: process.env.BANK_NAME,
+    desAccount,
+    desBankName,
+    fee,
+    feePayer,
+  });
+
+  sendOtpMail(customer.email, otp, "OTP xác thực chuyển khoản");
+
+  return res.status(200).json({
+    id: paymentTransaction.id,
+    amount: paymentTransaction.amount,
+    content: paymentTransaction.content,
+    desOwner: sender.customer.fullName,
+    desAccount: paymentTransaction.desAccount,
+    desBankName: paymentTransaction.desBankName,
+    fee: paymentTransaction.fee,
+    feePayer: paymentTransaction.feePayer,
+  });
+};
+
+export const payBankTransfer = async (req, res) => {
+  const { id, otp } = req.body;
+
+  const customer = await models.Customer.findOne({
+    where: { userId: req.user.id },
+  });
+
   const sender = await models.Paymentaccount.findOne({
     where: { customerId: customer.id },
   });
 
-  if (sender.balance < amount) {
-    return res.status(400).json({ message: "Insufficient balance" });
+  const transaction = await models.Paymenttransaction.findOne({
+    where: {
+      id: id,
+      srcAccount: sender.accountNumber,
+    },
+  });
+
+  if (!transaction) {
+    return res.status(404).json({ message: "Giao dịch không hợp lệ" });
   }
 
-  const paymentTransaction = await models.Paymenttransaction.create({
-    amount,
-    content,
-    otp,
-    otpExpiredAt: new Date(Date.now() + 10 * 60 * 1000),
-    status: 'ĐANG XỬ LÝ',
-    srcAccount: sender.accountNumber,
-    srcBankName: process.env.BANK_NAME,
-    desAccount: desAccountNumber,
-    desBankName: desBankName
-  })
-
-  sendOtpMail(customer.email, otp, "OTP thanh toán chuyển tiền");
-
-  return res.status(201).json({ message: "success", transactionId: paymentTransaction.id, fee: receiver ? INTERNAL_TRANSACTION_FEE : EXTERNAL_TRANSACTION_FEE });
-}
-
-
-export const banking = async (req, res) => {
-  const { transactionId, otp } = req.body;
-
-  const paymentTransaction = await models.Paymenttransaction.findOne({
-    where: { id: transactionId },
-  });
-  
-  if (!paymentTransaction) {
-    return res.status(404).json({ message: "Payment transaction not found" });
+  if (transaction.otp !== otp) {
+    return res.status(400).json({ message: "OTP không hợp lệ" });
   }
 
-  if (paymentTransaction.otp !== otp) {
-    return res.status(400).json({ message: "Invalid OTP" });
+  const amount = new Number(transaction.amount);
+  const fee = new Number(transaction.fee);
+  let senderBalance = new Number(sender.balance);
+
+  if (amount + fee > senderBalance) {
+    return res.status(400).json({ message: "Số dư không đủ" });
   }
 
-  if (paymentTransaction.otpExpiredAt < new Date()) {
-    return res.status(400).json({ message: "OTP expired" });
-  }
+  let receiver;
 
-  //TODO: refactor
-  const sender = await models.Customer.findOne({
-    where: { userId: req.user.id },
-  });
-
-  const receiver = await models.Customer.findOne({
-    where: { id: paymentTransaction.desAccount },
-  });
-
-  const senderPaymentAccount = await models.Paymentaccount.findOne({
-    where: { customerId: sender.id },
-  });
-  const receiverPaymentAccount = await models.Paymentaccount.findOne({
-    where: { customerId: receiver.id },
-  });
-
-  const senderBalance = new Decimal(senderPaymentAccount.balance);
-  const receiverBalance = new Decimal(receiverPaymentAccount.balance);
-
-  senderPaymentAccount.balance = senderBalance.minus(paymentTransaction.amount).toString();
-  receiverPaymentAccount.balance = receiverBalance.plus(paymentTransaction.amount).toString();
-
-  paymentTransaction.status = "Đã thanh toán";
-  senderPaymentAccount.save();
-  receiverPaymentAccount.save();
-  paymentTransaction.save();
-
-  return res.status(200).json({ message: "success" });
-};
-
-export const searchAccount = async (req, res) => {
-  const accountNumber = req.body.accountNumber || '';
-
-  try {
-    const account = await models.Paymentaccount.findOne({
-      where: { accountNumber: accountNumber },
-      include: [
-        {
-          model: models.Customer,
-          as: 'customer', 
-          required: true,
-        },
-      ],
+  if (transaction.desBankName === process.env.BANK_NAME) {
+    //Local banking
+    receiver = await models.Paymentaccount.findOne({
+      where: { accountNumber: transaction.desAccount },
+    });
+  } else {
+    //Interbank banking
+    const partner = await models.Partners.findOne({
+      where: { bankName: transaction.desBankName },
     });
 
-    console.log("customer::", account?.customer);
-    return res.status(200).json({accountNumber, fullName: account ? account.customer.fullName : ''});
-  } catch (error) {
-    console.error(error);
-    return res.status(400).json({accountNumber, fullName: ''});
+    if (!partner) {
+      return res.status(500).json({ message: "Lỗi hệ thống (2)" });
+    }
+
+    const success = await PGPPayTransferApi(
+      req.headers.host,
+      partner.domain,
+      transaction.desAccount,
+      amount,
+      partner.ourPrivateKey,
+      partner.partenerPublicKey
+    );
+
+    if (success) {
+      senderBalance -= amount + fee;
+      sender.balance = senderBalance;
+      transaction.status = "Đã thanh toán";
+
+      sender.save();
+      transaction.save();
+
+      return res.status(200).json({ message: "Chuyển khoản thành công" });
+    } else {
+      return res.status(200).json({ message: "Chuyển khoản thất bại" });
+    }
   }
+
+  if (!receiver) {
+    return res.status(404).json({ message: "Người nhận không tồn tại" });
+  }
+  if (receiver.customerId === customer.id) {
+    return res
+      .status(400)
+      .json({ message: "Không thể chuyển khoản cho bản thân" });
+  }
+
+  let receiverBalance = new Number(receiver.balance);
+
+  //Start transfering
+  console.log({
+    senderBalance,
+    receiverBalance,
+    newSender: senderBalance - amount + fee,
+    newReceiver: receiverBalance + amount,
+  });
+  senderBalance -= amount + fee;
+  sender.balance = senderBalance;
+  receiverBalance += amount;
+  receiver.balance = receiverBalance;
+  transaction.status = "Đã thanh toán";
+
+  sender.save();
+  receiver.save();
+  transaction.save();
+
+  return res.status(200).json({ message: "Chuyển khoản thành cônng" });
 };
