@@ -29,6 +29,18 @@ CREATE TABLE Customer (
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+
+CREATE TABLE Teller (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  fullName VARCHAR(255),
+  email VARCHAR(255),
+  phone VARCHAR(50),
+  userId INT,
+  FOREIGN KEY (userId) REFERENCES User(id),
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 CREATE TABLE PaymentAccount (
   id INT PRIMARY KEY AUTO_INCREMENT,
   accountNumber VARCHAR(255),
@@ -120,6 +132,14 @@ VALUES
   ('boon_real','$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6','CUSTOMER'),
   ('david_yellow', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER'),
   ('boonreal', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER');
+  ('rose', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'TELLER'),
+
+-- Dữ liệu mẫu cho bảng Teller
+INSERT INTO `Teller` (`fullName`, `email`, `phone`, `userId`)
+VALUES
+  ('John Doe', 'jane.smith@example.com', '052-521-6319', 2),
+  ('Rose', 'rose@example.com', '097-245-2119', 13),
+
 
 -- Dữ liệu mẫu cho bảng Customer (otp và otpExpiredAt để trống)
 INSERT INTO `Customer` (`fullName`, `email`, `phone`, `otp`, `otpExpiredAt`, `userId`)
