@@ -3,6 +3,7 @@ import { getPaymentHistoryApi } from "@/api/customer.api";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import { Avatar, Table, Input, Tag } from "antd";
 import { useState } from "react";
+import { SortOrder } from "antd/es/table/interface";
 
 interface Transaction {
   id: string;
@@ -100,6 +101,7 @@ const PaymentTransactionManagement = () => {
       title: "Thời gian",
       dataIndex: "createdAt",
       key: "createdAt",
+      defaultSortOrder: "descend" as SortOrder,
       sorter: (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       render: (createdAt: string) => {
@@ -120,14 +122,22 @@ const PaymentTransactionManagement = () => {
   if (isLoading) {
     return <div>Loading...</div>;
   }
+  // Extract the filtered transactions to a variable to avoid duplication
 
-  console.log(transactions.data);
+  const filteredTransactions = transactions.data.filter(
+    (item: Transaction) =>
+      item?.relatedPerson?.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.accountNumber.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
     <div className="w-full border rounded-lg flex flex-col p-4 space-y-5">
       <div className="flex flex-row justify-between items-center">
         <div>
           <p className="font-semibold">Lịch sử giao dịch</p>
-          <p className="text-gray-500">{transactions.data.length} giao dịch</p>
+          <p className="text-gray-500">
+            {filteredTransactions.length} giao dịch
+          </p>
         </div>
       </div>
       <Input
@@ -139,14 +149,12 @@ const PaymentTransactionManagement = () => {
         }}
       />
       <Table
-        dataSource={transactions.data
-          .filter((item: Transaction) =>
-            item?.relatedPerson
-              ?.toLowerCase()
-              .includes(searchText.toLowerCase())
-          )
-          .map((item: Transaction) => ({ ...item, key: item.id }))}
+        dataSource={filteredTransactions.map((item: Transaction) => ({
+          ...item,
+          key: item.id,
+        }))}
         columns={columns}
+        pagination={{ pageSize: 10 }}
       />
     </div>
   );

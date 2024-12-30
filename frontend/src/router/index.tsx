@@ -8,7 +8,8 @@ import AuthLayout from "@/pages/auth";
 import AdminLayout from "@/pages/admin";
 import TransactionHistoryPage from "@/pages/admin/transaction-history";
 import TellerManagementPage from "@/pages/admin/teller-management";
-
+import TellerLayout from "@/pages/teller";
+import TellerRoutes from "./teller";
 const AppRouter = () => {
   return (
     <Routes>
@@ -28,6 +29,11 @@ const AppRouter = () => {
             path="transaction-history"
             element={<TransactionHistoryPage />}
           />
+        </Route>
+      </Route>
+      <Route element={<AuthGuard requiredRole="Teller" />}>
+        <Route element={<TellerLayout />}>
+          <Route path="/teller/*" element={<TellerRoutes />} />
         </Route>
       </Route>
     </Routes>

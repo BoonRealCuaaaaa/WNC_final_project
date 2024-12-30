@@ -4,6 +4,7 @@ import Decimal from "decimal.js";
 import { Op } from "sequelize";
 import { sendNotification } from "../services/socket.js";
 import { sendOtpMail } from "../services/email.js";
+import { INTERNAL_TRANSACTION_FEE } from "../constants/transaction-fee.js";
 
 export const generateOtpForDebit = async (req, res) => {
   const { debitId } = req.body;
@@ -103,7 +104,12 @@ export const payDebit = async (req, res) => {
 
   const debtorBalance = new Decimal(debtorPaymentAccount.balance);
   const creditorBalance = new Decimal(creditorPaymentAccount.balance);
-  const amount = new Decimal(debit.amount);
+  const totalAmount = Number(debit.amount) + INTERNAL_TRANSACTION_FEE;
+  const amount = new Decimal(totalAmount);
+
+  if (debtorBalance.lessThan(amount)) {
+    return res.status(400).json({ message: "Not enough balance" });
+  }
 
   debtorPaymentAccount.balance = debtorBalance.minus(amount).toString();
   creditorPaymentAccount.balance = creditorBalance.plus(amount).toString();
@@ -128,7 +134,13 @@ export const payDebit = async (req, res) => {
 };
 
 export const getTransactionHistory = async (req, res) => {
-  const { id } = req.user;
+  let id;
+  if (req.user.role === "TELLER") {
+    id = req.params.id;
+  }
+  if (req.user.role === "CUSTOMER") {
+    id = req.user.id;
+  }
   try {
     const account = await models.Paymentaccount.findOne({
       where: { customerId: id },
@@ -220,12 +232,12 @@ export const getTransactionHistory = async (req, res) => {
         relatedPerson,
         accountNumber:
           tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount,
+        customerAccountNumber: accountNumber,
       };
     });
 
     res.status(200).json(transactionsWithType);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };

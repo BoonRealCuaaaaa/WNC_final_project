@@ -157,24 +157,24 @@ VALUES
 -- Dữ liệu mẫu cho bảng PaymentAccount (thêm dấu gạch ngang vào accountNumber)
 INSERT INTO `PaymentAccount` (`accountNumber`, `balance`, `customerId`)
 VALUES
-  ('123-456-789-012', 10000.00, 1),
-  ('987-654-321-098', 5000.00, 4),
-  ('112-233-445-566', 3000.00, 5),
-  ('998-877-665-544', 1500.00, 6),
-  ('667-788-990-011', 7000.00, 7),
-  ('889-900-112-233', 2000.00, 8),
-  ('998-877-665-544', 4000.00, 9);
+  ('123456789012', 10000.00, 1),
+  ('987654321098', 5000.00, 4),
+  ('112233445566', 3000.00, 5),
+  ('998877665544', 1500.00, 6),
+  ('667788990011', 7000.00, 7),
+  ('889900112233', 2000.00, 8),
+  ('998877665544', 4000.00, 9);
 
 -- Dữ liệu mẫu cho bảng Beneficiaries (chỉ có bankName là 'OWN_BANK' hoặc 'BANK A')
 INSERT INTO `Beneficiaries` (`name`, `shortName`, `bankName`, `accountNumber`, `customerId`)
 VALUES
-  ('Alice Johnson', 'Alice', 'BANK A', '123-000-1234', 1),
-  ('Bob Brown', 'Bob', 'OWN_BANK', '987-000-9876', 4),
-  ('Charlie White', 'Charlie', 'BANK A', '333-000-3333', 5),
-  ('David Green', 'David', 'OWN_BANK', '444-000-4444', 6),
-  ('Eve Blue', 'Eve', 'BANK A', '555-000-5555', 7),
-  ('Frank Grey', 'Frank', 'OWN_BANK', '666-000-6666', 8),
-  ('Grace Yellow', 'Grace', 'BANK A', '777-000-7777', 9);
+  ('Alice Johnson', 'Alice', 'BANK A', '1230001234', 1),
+  ('Bob Brown', 'Bob', 'OWN_BANK', '9870009876', 4),
+  ('Charlie White', 'Charlie', 'BANK A', '3330003333', 5),
+  ('David Green', 'David', 'OWN_BANK', '4440004444', 6),
+  ('Eve Blue', 'Eve', 'BANK A', '5550005555', 7),
+  ('Frank Grey', 'Frank', 'OWN_BANK', '666000-6666', 8),
+  ('Grace Yellow', 'Grace', 'BANK A', '7770007777', 9);
 
 -- Dữ liệu mẫu cho bảng PaymentTransaction (status dùng tiếng Việt)
 INSERT INTO `PaymentTransaction` (`amount`, `content`, `otp`, `otpExpiredAt`, `status`, `srcAccount`, `srcBankName`, `desAccount`, `desBankName`)
