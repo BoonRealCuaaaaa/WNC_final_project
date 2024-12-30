@@ -384,6 +384,8 @@ export const payBankTransfer = async (req, res) => {
       partner.domain,
       transaction.desAccount,
       amount,
+      transaction.srcAccount,
+      transaction.content,
       partner.ourPrivateKey,
       partner.partenerPublicKey
     );

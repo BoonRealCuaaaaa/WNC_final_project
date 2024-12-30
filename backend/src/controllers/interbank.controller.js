@@ -29,10 +29,12 @@ export const PGPSearchAccountApi = async (domain, accountNumber) => {
 };
 
 
-export const PGPPayTransferApi = async (ourDomain, partnerDomain, accountNumber, amount, privateKey, parnerPublicKey) => {
+export const PGPPayTransferApi = async (ourDomain, partnerDomain, accountNumber, amount, srcAccount, content, privateKey, parnerPublicKey) => {
   const payload = {
     accountNumber,
     amount,
+    srcAccount,
+    content
   }
 
   try {
@@ -68,7 +70,9 @@ export const PGPPayTransferApi = async (ourDomain, partnerDomain, accountNumber,
 export const handleTradeInterbank = async (req, res) => {
   const accountNumber = req.body.payload.accountNumber || "";
   const amount = isNaN(req.body.payload.amount) ? 0 : Number(req.body.payload.amount);
-  
+  const srcAccount =  req.body.payload.srcAccount || '';
+  const content =  req.body.payload.content || '';
+
   const domain = req.body.domain;
 
   const failMessage = JSON.stringify({message: "fail"});
@@ -97,8 +101,20 @@ export const handleTradeInterbank = async (req, res) => {
       .plus(new Decimal(amount))
       .toString();
 
-      paymentAccount.save();
+  paymentAccount.save();
 
+  await models.Paymenttransaction.create({
+    amount: amount,
+    content,
+    otp: "",
+    otpExpiredAt: new Date(),
+    status: "Đã thanh toán",
+    srcAccount,
+    srcBankName: partner.bankName,
+    desAccount: accountNumber,
+    desBankName: process.env.BANK_NAME,
+  });
+    
   try {
     return res
       .status(200)

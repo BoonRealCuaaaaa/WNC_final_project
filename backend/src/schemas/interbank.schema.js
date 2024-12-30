@@ -6,8 +6,10 @@ export const handleTradeInterbankSchema = {
       properties: {
         amount: { type: "number" },
         accountNumber: { type: "string" },
+        srcAccount: {type: "string"},
+        content: {type: "string"},
       },
-      required: ["amount", "accountNumber"],
+      required: ["amount", "accountNumber", "srcAccount", "content"],
       additionalProperties: false,
     },
     time: { type: "number" },
