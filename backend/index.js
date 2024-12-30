@@ -8,12 +8,13 @@ import interbankRouter from "./src/routes/interbank.route.js";
 import notificationRouter from "./src/routes/notification.route.js";
 import beneficiaryRouter from "./src/routes/beneficiary.route.js";
 import paymentTransactionRouter from "./src/routes/payment-transaction.route.js";
+import adminRouter from "./src/routes/admin.route.js";
 import tellerRouter from "./src/routes/teller.route.js";
 import partnerRouter from "./src/routes/partner.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
-import { verifyTellerAccount } from "./src/middlewares/verify-teller-account.middleware.js";
+import { verifyTellerAccount, verifyAdminAccount } from "./src/middlewares/verify-teller-account.middleware.js";
 
 const app = express();
 app.use(express.json());
@@ -31,6 +32,7 @@ app.use("/customer", verifyToken, customerRouter);
 app.use("/debits", verifyToken, debitRouter);
 app.use("/beneficiaries", verifyToken, beneficiaryRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
+app.use("/admin", verifyToken, verifyAdminAccount, adminRouter);
 app.use("/teller", verifyToken, verifyTellerAccount, tellerRouter);
 app.use("/partners", verifyToken, partnerRouter);
 

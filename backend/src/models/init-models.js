@@ -9,10 +9,12 @@ import _Paymentaccount from  "./Paymentaccount.js";
 import _Paymenttransaction from  "./Paymenttransaction.js";
 import _Refreshtoken from  "./Refreshtoken.js";
 import _User from  "./User.js";
+import _Teller from  "./Teller.js";
 
 export default function initModels(sequelize) {
   const Beneficiaries = _Beneficiaries.init(sequelize, DataTypes);
   const Customer = _Customer.init(sequelize, DataTypes);
+  const Teller = _Teller.init(sequelize, DataTypes);
   const Debits = _Debits.init(sequelize, DataTypes);
   const Notification = _Notification.init(sequelize, DataTypes);
   const Partners = _Partners.init(sequelize, DataTypes);
@@ -35,6 +37,8 @@ export default function initModels(sequelize) {
   Paymenttransaction.hasMany(Debits, { as: "debits", foreignKey: "paymentTransactionsId"});
   Customer.belongsTo(User, { as: "user", foreignKey: "userId"});
   User.hasMany(Customer, { as: "customers", foreignKey: "userId"});
+  Teller.belongsTo(User, { as: "user", foreignKey: "userId"});
+  User.hasMany(Teller, { as: "tellers", foreignKey: "userId"});
   Refreshtoken.belongsTo(User, { as: "user", foreignKey: "userId"});
   User.hasMany(Refreshtoken, { as: "refreshtokens", foreignKey: "userId"});
 
@@ -48,5 +52,6 @@ export default function initModels(sequelize) {
     Paymenttransaction,
     Refreshtoken,
     User,
+    Teller,
   };
 }
