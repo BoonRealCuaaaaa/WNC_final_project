@@ -37,14 +37,22 @@ export default function AddTellerDialog({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<Inputs>({
-    mode: "onSubmit",
-    reValidateMode: "onChange"
+    mode: "all",
+    defaultValues: {
+      username: "",
+      password: "",
+      fullName: "",
+      email: "",
+      phone: "",
+    }
   });
 
   const onAddSubmit: SubmitHandler<Inputs> = (data) => {
     handleAdd(data);
+    reset();
   }
 
   return (

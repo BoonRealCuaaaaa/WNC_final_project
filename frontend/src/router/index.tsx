@@ -21,9 +21,14 @@ const AppRouter = () => {
           <Route path="/*" element={<CustomerRoutes />} />
         </Route>
       </Route>
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<TellerManagementPage />} />
-        <Route path="transaction-history" element={<TransactionHistoryPage />} />
+      <Route path="/admin" element={<AuthGuard requiredRole="Admin" />}>
+        <Route element={<AdminLayout />}>
+          <Route index element={<TellerManagementPage />} />
+          <Route
+            path="transaction-history"
+            element={<TransactionHistoryPage />}
+          />
+        </Route>
       </Route>
     </Routes>
   );

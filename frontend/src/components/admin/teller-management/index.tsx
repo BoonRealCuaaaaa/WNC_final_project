@@ -325,7 +325,7 @@ export default function TellerManagement() {
       <div className="flex flex-row justify-between items-center">
         <div>
           <p className="font-semibold">Danh sách giao dịch viên</p>
-          <p className="text-gray-500">{tellers.length} giao dịch viên</p>
+          <p className="text-gray-500">{tellers?.length} giao dịch viên</p>
         </div>
         <AddTellerDialog handleAdd={handleAdd} open={openAddForm} setOpen={setOpenAddForm}>
           <Button>Tạo giao dịch viên</Button>
@@ -333,7 +333,7 @@ export default function TellerManagement() {
       </div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
+          placeholder="Searching..."
           value={globalFilter}
           onChange={(event) =>
             table.setGlobalFilter(String(event.target.value))

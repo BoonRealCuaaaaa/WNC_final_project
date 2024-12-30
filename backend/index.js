@@ -14,7 +14,7 @@ import { Server } from "socket.io";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
 import { sendOtpMail } from "./src/services/email.js";
-import { verifyTellerAccount } from "./src/middlewares/verify-teller-account.middleware.js";
+import { verifyTellerAccount, verifyAdminAccount } from "./src/middlewares/verify-teller-account.middleware.js";
 
 const app = express();
 app.use(express.json());
@@ -33,7 +33,7 @@ app.use("/debits", verifyToken, debitRouter);
 app.use("/beneficiaries", verifyToken, beneficiariesRouter);
 app.use("/payment-transaction", verifyToken, paymentTransactionRouter);
 app.use("/employee", verifyToken, verifyTellerAccount, employeeRouter);
-app.use("/admin", adminRouter);
+app.use("/admin", verifyToken, verifyAdminAccount, adminRouter);
 
 // Example of protected API
 let cnt = 0;
