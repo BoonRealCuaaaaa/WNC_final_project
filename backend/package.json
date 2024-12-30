@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "ajv": "^8.17.1",
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "decimal.js": "^10.4.3",
@@ -21,6 +22,7 @@
     "mysql2": "^3.11.5",
     "node-mailjet": "^6.0.6",
     "nodemon": "^3.1.7",
+    "openpgp": "^6.0.1",
     "sequelize": "^6.37.5",
     "sequelize-auto": "^0.8.8",
     "socket.io": "^4.8.1",

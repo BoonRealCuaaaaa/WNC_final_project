@@ -1,0 +1,3 @@
+export const ASYMMETRIC_ENCRYPTION_ALGORITHM = {
+    RSA: 'SHA256',
+}

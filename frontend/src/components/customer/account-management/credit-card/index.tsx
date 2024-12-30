@@ -15,7 +15,6 @@ export default function CreditCard() {
         mutationFn: getPaymentAccountApi,
         onSuccess: (response) => {
             if (response.status === 200) {
-                console.log(response.data);
                 update(response.data.accountNumber, response.data.balance);
             }
         },

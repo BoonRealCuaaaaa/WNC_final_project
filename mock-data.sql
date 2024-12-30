@@ -74,6 +74,8 @@ CREATE TABLE PaymentTransaction (
   srcBankName VARCHAR(255),
   desAccount VARCHAR(255),
   desBankName VARCHAR(255),
+  fee DECIMAL (15, 2),
+  feePayer ENUM ('RECEIVER', 'SENDER'),
   createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -177,16 +179,16 @@ VALUES
   ('Grace Yellow', 'Grace', 'BANK A', '7770007777', 9);
 
 -- Dữ liệu mẫu cho bảng PaymentTransaction (status dùng tiếng Việt)
-INSERT INTO `PaymentTransaction` (`amount`, `content`, `otp`, `otpExpiredAt`, `status`, `srcAccount`, `srcBankName`, `desAccount`, `desBankName`)
+INSERT INTO `PaymentTransaction` (`amount`, `content`, `otp`, `otpExpiredAt`, `status`, `srcAccount`, `srcBankName`, `desAccount`, `desBankName`, `fee`, `feePayer`)
 VALUES
-  (1000.00, 'Thanh toán dịch vụ', '123456', '2024-12-12 12:00:00', 'ĐANG XỬ LÝ', '123-456-789-012', 'Bank A', '987-000-9876', 'Bank B'),
-  (500.00, 'Thanh toán hàng hóa', '654321', '2024-12-12 13:00:00', 'HOÀN THÀNH', '987-654-321-098', 'Bank B', '123-000-1234', 'Bank A'),
-  (1500.00, 'Thanh toán hóa đơn', '234567', '2024-12-12 14:00:00', 'ĐANG XỬ LÝ', '112-233-445-566', 'Bank C', '333-000-3333', 'Bank C'),
-  (2000.00, 'Thanh toán cho đối tác', '345678', '2024-12-12 15:00:00', 'HOÀN THÀNH', '667-788-990-011', 'Bank D', '444-000-4444', 'Bank D'),
-  (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889-900-112-233', 'Bank E', '555-000-5555', 'Bank E'),
-  (3000.00, 'Thanh toán dịch vụ bổ sung', '567890', '2024-12-12 17:00:00', 'ĐANG XỬ LÝ', '123-456-789-012', 'Bank A', '666-000-6666', 'Bank F'),
-  (4000.00, 'Thanh toán đầu tư', '678901', '2024-12-12 18:00:00', 'HOÀN THÀNH', '987-654-321-098', 'Bank B', '777-000-7777', 'Bank G');
-  (1200.00, 'Thanh toán nội bộ', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '123-000-1234', 'Bank A', '123-456-789-012', 'Bank A'),
+  (1000.00, 'Thanh toán dịch vụ', '123456', '2024-12-12 12:00:00', 'ĐANG XỬ LÝ', '123-456-789-012', 'Bank A', '987-000-9876', 'Bank B', 100.00, 'RECEIVER'),
+  (500.00, 'Thanh toán hàng hóa', '654321', '2024-12-12 13:00:00', 'HOÀN THÀNH', '987-654-321-098', 'Bank B', '123-000-1234', 'Bank A', 120.00, 'RECEIVER'),
+  (1500.00, 'Thanh toán hóa đơn', '234567', '2024-12-12 14:00:00', 'ĐANG XỬ LÝ', '112-233-445-566', 'Bank C', '333-000-3333', 'Bank C', 200.00, 'SENDER'),
+  (2000.00, 'Thanh toán cho đối tác', '345678', '2024-12-12 15:00:00', 'HOÀN THÀNH', '667-788-990-011', 'Bank D', '444-000-4444', 'Bank D', 130.00, 'RECEIVER'),
+  (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889-900-112-233', 'Bank E', '555-000-5555', 'Bank E', 120.00, 'RECEIVER'),
+  (3000.00, 'Thanh toán dịch vụ bổ sung', '567890', '2024-12-12 17:00:00', 'ĐANG XỬ LÝ', '123-456-789-012', 'Bank A', '666-000-6666', 'Bank F', 100.00, 'SENDER'),
+  (4000.00, 'Thanh toán đầu tư', '678901', '2024-12-12 18:00:00', 'HOÀN THÀNH', '987-654-321-098', 'Bank B', '777-000-7777', 'Bank G', 110.00, 'RECEIVER'),
+  (1200.00, 'Thanh toán nội bộ', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '123-000-1234', 'Bank A', '123-456-789-012', 'Bank A', 220.00, 'SENDER');
 
 -- Dữ liệu mẫu cho bảng Debits
 INSERT INTO `Debits` (`amount`, `content`, `status`, `cancelReason`, `paymentTransactionsId`, `creditor`, `debtor`)

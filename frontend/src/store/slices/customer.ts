@@ -10,7 +10,7 @@ const createCustomerSlice: StateCreator<
   CustomerSlice
 > = (set) => ({
   accountNumber: "",
-  balance: 213213,
+  balance: 0,
   update: (accountNumber: string, balance: number) => set(() => ({ accountNumber, balance })),
 })
 
