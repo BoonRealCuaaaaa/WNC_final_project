@@ -4,6 +4,8 @@ import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import { Avatar, Table, Input, Tag } from "antd";
 import { useState } from "react";
 import { SortOrder } from "antd/es/table/interface";
+import { formatBankAccountNumber } from "@/lib/string";
+import { formatDate } from "@/lib/time";
 
 interface Transaction {
   id: string;
@@ -76,7 +78,10 @@ const PaymentTransactionManagement = () => {
           <div>
             <div>{record.relatedPerson}</div>
             <div style={{ color: "gray", fontSize: "12px" }}>
-              {record.accountNumber}
+              {formatBankAccountNumber(record.accountNumber)}{" "}
+              {record.relatedBank !== import.meta.env.VITE_BANK_NAME && (
+                <Tag>{record.relatedBank}</Tag>
+              )}
             </div>
           </div>
         </div>
@@ -86,6 +91,7 @@ const PaymentTransactionManagement = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
+      sorter: (a, b) => a.amount - b.amount,
       render: (amount, record) => (
         <span
           className={
@@ -104,18 +110,7 @@ const PaymentTransactionManagement = () => {
       defaultSortOrder: "descend" as SortOrder,
       sorter: (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      render: (createdAt: string) => {
-        const date = new Date(createdAt);
-        const formattedDate = `${date.getDate().toString().padStart(2, "0")}/${(
-          date.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, "0")}/${date.getFullYear()}, ${date.getHours()}:${date
-          .getMinutes()
-          .toString()
-          .padStart(2, "0")} ${date.getHours() >= 12 ? "PM" : "AM"}`;
-        return formattedDate;
-      },
+      render: (createdAt: string) => formatDate(createdAt),
     },
   ];
 
@@ -135,6 +130,9 @@ const PaymentTransactionManagement = () => {
       <div className="flex flex-row justify-between items-center">
         <div>
           <p className="font-semibold">Lịch sử giao dịch</p>
+          <p className="text-gray-500 text-sm">
+            *Chỉ hiển thị các giao dịch trong vòng 30 ngày
+          </p>
           <p className="text-gray-500">
             {filteredTransactions.length} giao dịch
           </p>

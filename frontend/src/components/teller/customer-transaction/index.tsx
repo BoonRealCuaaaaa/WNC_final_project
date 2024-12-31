@@ -5,6 +5,8 @@ import { Avatar, Table, Input, Tag } from "antd";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { SortOrder } from "antd/es/table/interface";
+import { formatBankAccountNumber } from "@/lib/string";
+import { formatDate } from "@/lib/time";
 
 interface Transaction {
   id: string;
@@ -14,6 +16,7 @@ interface Transaction {
   amount: number;
   createdAt: string;
   customerAccountNumber: string;
+  relatedBank: string;
 }
 const CustomerTransactionManagement = () => {
   const { id } = useParams();
@@ -79,7 +82,10 @@ const CustomerTransactionManagement = () => {
           <div>
             <div>{record.relatedPerson}</div>
             <div style={{ color: "gray", fontSize: "12px" }}>
-              {record.accountNumber}
+              {formatBankAccountNumber(record.accountNumber)}{" "}
+              {record.relatedBank !== import.meta.env.VITE_BANK_NAME && (
+                <Tag>{record.relatedBank}</Tag>
+              )}
             </div>
           </div>
         </div>
@@ -89,6 +95,7 @@ const CustomerTransactionManagement = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
+      sorter: (a, b) => a.amount - b.amount,
       render: (amount, record) => (
         <span
           className={
@@ -107,18 +114,7 @@ const CustomerTransactionManagement = () => {
       defaultSortOrder: "descend" as SortOrder,
       sorter: (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      render: (createdAt: string) => {
-        const date = new Date(createdAt);
-        const formattedDate = `${date.getDate().toString().padStart(2, "0")}/${(
-          date.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, "0")}/${date.getFullYear()}, ${date.getHours()}:${date
-          .getMinutes()
-          .toString()
-          .padStart(2, "0")} ${date.getHours() >= 12 ? "PM" : "AM"}`;
-        return formattedDate;
-      },
+      render: (createdAt: string) => formatDate(createdAt),
     },
   ];
 

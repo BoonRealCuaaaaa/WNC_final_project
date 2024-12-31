@@ -52,7 +52,9 @@ const Header = React.forwardRef<
           {children}
         </div>
         <div className="flex items-center gap-x-4">
-          {roleValue !== "admin" && <NotificationBell />}
+          {roleValue !== "admin" && roleValue !== "teller" && (
+            <NotificationBell />
+          )}
           <div className="flex flex-col gap-y-1 items-end">
             <Description>{role}</Description>
             <div className="font-medium text-[14px]/[14px]">{userName}</div>
