@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { Button } from "@/components/ui/button"
+import { Button, LoadingButton } from "@/components/ui/button"
 import {
     Form,
     FormControl,
@@ -30,6 +30,8 @@ import { useEffect, useState } from "react"
 import { toast } from "@/hooks/use-toast"
 import { createBeneficiaryApi } from "@/api/beneficiaries.api"
 import { AxiosError } from "axios"
+import { checkExistApi } from "@/api/customer.api"
+import { checkExistInterbankAccountsApi } from "@/api/interbank"
 
 const formSchema = z.object({
     bankName: z.string()
@@ -43,8 +45,7 @@ const formSchema = z.object({
         .regex(/^\d+$/, {
             message: "Số tài khoản chỉ có thể chứa các chữ số",
         }),
-    remindName: z.string()
-        .nonempty(),
+    remindName: z.string(),
 })
 
 export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => void }) {
@@ -63,7 +64,8 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
         const { bankName, accountNumber, remindName } = values;
-        mutateCreateBeneficiary({ bankName, accountNumber, remindName });
+        setIsSubmitting(true);
+        mutateCreateBeneficiary({ bankName, accountNumber, remindName: remindName !== "" ? remindName : recevier });
     }
 
     const [bankNames, setBankNames] = useState<string[]>([]);
@@ -90,6 +92,55 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
         mutatePartners();
     }, [mutatePartners])
 
+    const [recevier, setReceiver] = useState<string | undefined>();
+
+    const { mutate: mutateReceiver } = useMutation({
+            mutationFn:  checkExistApi,
+            onSuccess: (response) => {
+                console.log(response.data);
+                if (response.status === 200) {
+                    setReceiver(response.data.fullName);
+                    form.clearErrors("accountNumber");
+                }
+            },
+            onError: () => {
+                setReceiver(undefined);
+                form.setValue("remindName", "");
+                form.setError("accountNumber", {
+                    type: "manual",
+                    message: "Không tìm thấy số tài khoản"
+                })
+            },
+        });
+
+        const { mutate: mutateInterbankReceiver } = useMutation({
+            mutationFn:  checkExistInterbankAccountsApi,
+            onSuccess: (response) => {
+                console.log(response.data);
+                if (response.status === 200) {
+                    setReceiver(response.data.fullName);
+                    form.clearErrors("accountNumber");
+                }
+            },
+            onError: () => {
+                setReceiver(undefined);
+                form.setValue("remindName", "");
+                form.setError("accountNumber", {
+                    type: "manual",
+                    message: "Không tìm thấy số tài khoản"
+                })
+            },
+        });
+
+    const handleMutateReceiver = () => {
+        if (import.meta.env.VITE_BANK_NAME === form.getValues("bankName")) {
+            mutateReceiver(form.getValues("accountNumber"))
+        }
+        else {
+            mutateInterbankReceiver({bankName: form.getValues("bankName"), accountNumber: form.getValues("accountNumber")})
+        }
+    }
+
     const [submitStatus, setSubmitStatus] = useState<"default" | "submitting" | "failed" | "success">("default");
 
     useEffect(() => {
@@ -99,6 +150,8 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
     const { mutate: mutateCreateBeneficiary } = useMutation({
         mutationFn: createBeneficiaryApi,
         onSuccess: (response) => {
+            setIsSubmitting(false);
+
             if (response.status === 201) {
                 setSubmitStatus("success");
                 toast({
@@ -108,6 +161,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
             }
         },
         onError: (error: AxiosError) => {
+            setIsSubmitting(false);
             setSubmitStatus("failed");
 
             const message = (error.response?.data as { message: string }).message;
@@ -119,6 +173,8 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
             });
         },
     });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     return (
         <Form {...form}>
@@ -137,7 +193,10 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                             render={({ field }) => (
                                 <FormItem className="max-w-[200px]">
                                     <FormLabel>Ngân hàng</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={(event) => {
+                                        field.onChange(event);
+                                        handleMutateReceiver();
+                                    }} defaultValue={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Chọn ngân hàng..." />
@@ -161,7 +220,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                                 <FormItem>
                                     <FormLabel>Số tài khoản</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Nhập STK..." {...field} type="number"/>
+                                        <Input placeholder="Nhập STK..." {...field} type="number" onBlur={handleMutateReceiver}/>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -175,7 +234,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                             <FormItem>
                                 <FormLabel>Tên gợi nhớ</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Nhập tên gợi nhớ..." {...field} />
+                                    <Input placeholder={recevier ?? "Nhập tên gợi nhớ..."} {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -183,7 +242,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
                     />
                 </FormMainContent>
                 <DialogFooter>
-                    <Button type="submit">Thêm người thụ hưởng mới</Button>
+                    <LoadingButton type="submit" isLoading={isSubmitting}>Thêm người thụ hưởng mới</LoadingButton>
                 </DialogFooter>
 
             </form>

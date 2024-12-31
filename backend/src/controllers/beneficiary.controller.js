@@ -1,4 +1,5 @@
 import { models } from "../lib/utils/database/index.js";
+import { PGPSearchAccountApi } from "./interbank.controller.js";
 
 export const getBeneficiaries = async (req, res) => {
   const customer = await models.Customer.findOne({
@@ -23,11 +24,27 @@ export const createBeneficiary = async (req, res) => {
   const beneficiary = await models.Beneficiaries.findOne({
     where: { bankName, accountNumber, customerId: customer.id },
   });
-  
+
   if (beneficiary) {
     return res
       .status(400)
       .json({ message: `${accountNumber} in ${bankName} bank is existed` });
+  }
+
+  let receiver;
+
+  if (bankName === process.env.BANK_NAME) {
+    //Local
+    receiver = await models.Paymentaccount.findOne({
+      where: { accountNumber },
+    });
+  } else {
+    //Interbank
+    receiver = await PGPSearchAccountApi(bankName, accountNumber);
+  }
+
+  if (!receiver) {
+    return res.status(404).json({ message: "Receiver not found" });
   }
 
   const beneficiaryEntity = await models.Beneficiaries.create({
