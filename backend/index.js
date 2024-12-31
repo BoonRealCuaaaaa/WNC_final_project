@@ -14,7 +14,10 @@ import partnerRouter from "./src/routes/partner.route.js";
 import { verifyToken } from "./src/middlewares/authenticate.middleware.js";
 import http from "http";
 import { initializeSocket } from "./src/services/socket.js";
-import { verifyTellerAccount, verifyAdminAccount } from "./src/middlewares/verify-teller-account.middleware.js";
+import {
+  verifyTellerAccount,
+  verifyAdminAccount,
+} from "./src/middlewares/verify-teller-account.middleware.js";
 
 const app = express();
 app.use(express.json());
