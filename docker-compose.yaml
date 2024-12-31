@@ -1,0 +1,61 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_RECAPTCHA_SITE_KEY: 6LfEtJQqAAAAAMlBVDK53sVrpabjBCLXjVLQKW-Z
+      VITE_RECAPCHA_SECRET_KEY: 6LfEtJQqAAAAACiYXfGs0p23Xa0nKn4d0xLKQffF
+      VITE_API_APP: http://localhost:5555
+      VITE_BANK_NAME: "Ngân hàng A"
+    ports:
+      - "5173:5173"
+    networks:
+      - wnc_final_project
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5555"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: wnc_final_project
+      PORT: 5555
+      FRONTEND_URL: http://localhost:5173
+      ACCESS_TOKEN: MySecretKey
+      REFRESH_TOKEN: MyVerySecretKey
+      SECRET_KEY: SecretKey
+      MAILJET_API_KEY: 5f453b57b69003f11cdbd0d46c363385
+      MAILJET_SECRET_KEY: c398f2a5e8a7990929dc9c28770868b0
+      ASYMMETRIC_ENCRYPTION_ALGORITHM: RSA
+      BANK_NAME: "Ngân hàng A"
+    networks:
+      - wnc_final_project
+    expose:
+      - "5555"
+    depends_on:
+      - db
+  db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wnc_final_project
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mock-data.sql:/docker-entrypoint-initdb.d/mock-data.sql:ro
+    networks:
+      - wnc_final_project
+    expose:
+      - "3306"
+volumes:
+  db_data:
+networks:
+  wnc_final_project:
+    driver: bridge
