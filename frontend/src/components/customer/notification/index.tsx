@@ -8,10 +8,9 @@ import {
 } from "@/api/notification.api";
 import { Separator } from "@/components/ui/separator";
 import { connectSocket, onNotify } from "@/shared/lib/services/socket";
-import { Check2 } from "react-bootstrap-icons";
 import { Popover } from "@radix-ui/react-popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const NotificationBell = () => {
   const queryClient = useQueryClient();
@@ -40,6 +39,9 @@ const NotificationBell = () => {
 
       onNotify((data) => {
         console.log(data);
+        if (data.title == "Đã thanh toán nợ") {
+          queryClient.invalidateQueries({ queryKey: ["debit-creditor"] });
+        }
         queryClient.setQueryData(
           ["notifications"],
           (oldData: {
@@ -62,17 +64,16 @@ const NotificationBell = () => {
     }
   }, [queryClient]);
 
-  const markAllAsRead = () => {
-    console.log("Mark all as read");
-    notifications.data.forEach((notif) => {
-      if (!notif.isRead) {
-        readNotification(notif.id);
-      }
-    });
-  };
+  const navigate = useNavigate();
 
-  const handleNotificationClick = (id) => {
+  const handleNotificationClick = (id, relatedDebitUrl) => {
     readNotification(id);
+
+    console.log("HEHE", relatedDebitUrl);
+
+    if (relatedDebitUrl) {
+      navigate(relatedDebitUrl);
+    }
   };
 
   if (isLoadingNotifications) return <div>Loading...</div>;
@@ -97,7 +98,9 @@ const NotificationBell = () => {
               } cursor-pointer transition-all duration-200`}
             >
               <div
-                onClick={() => handleNotificationClick(item.id)}
+                onClick={() =>
+                  handleNotificationClick(item.id, item.relatedDebitUrl)
+                }
                 className="flex-1"
               >
                 <h4 className="font-bold text-purple-800">{item.title}</h4>

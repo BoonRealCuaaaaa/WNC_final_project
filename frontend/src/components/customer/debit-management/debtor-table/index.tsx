@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import PaymentDialog from "./payment-dialog";
 import CancelDialog from "./cancel-dialog";
+import { useSearchParams } from "react-router-dom";
 
 const DebtorTable = () => {
   const {
@@ -17,6 +18,9 @@ const DebtorTable = () => {
     queryKey: ["debit-creditor"],
     queryFn: getReceivedDebitApi,
   });
+
+  const [searchParams] = useSearchParams();
+  const payDebit = searchParams.get("payDebit");
 
   const columns = [
     {
@@ -82,7 +86,11 @@ const DebtorTable = () => {
       render: (_, record) =>
         record.status == "Chưa thanh toán" && (
           <div className="flex justify-start space-x-3">
-            <PaymentDialog record={record} refetchDebits={refetchDebits} />
+            <PaymentDialog
+              record={record}
+              refetchDebits={refetchDebits}
+              preOpen={payDebit == record.id ? true : false}
+            />
             <CancelDialog record={record} refetchDebits={refetchDebits} />
           </div>
         ),
