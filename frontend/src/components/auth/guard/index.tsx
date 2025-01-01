@@ -9,6 +9,9 @@ const AuthGuard = (props) => {
   if (!accessToken || accessToken == "") {
     return <Navigate to="/auth/login" />;
   }
+
+  console.log(userRole);
+  console.log(requiredRole);
   if (userRole.toLowerCase() !== requiredRole.toLowerCase()) {
     return <Navigate to="/401" />;
   }

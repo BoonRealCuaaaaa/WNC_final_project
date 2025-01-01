@@ -7,7 +7,7 @@ const AdminLayout = () => {
     <div className="flex flex-col h-screen">
       <Header>
         <NavLink
-          to=""
+          to="/admin"
           end
           className={({ isActive }) =>
             isActive ? "font-medium text-black" : "text-primary-gray"
@@ -16,12 +16,20 @@ const AdminLayout = () => {
           Quản lý giao dịch viên
         </NavLink>
         <NavLink
-          to="transaction-history"
+          to="/admin/transaction-history"
           className={({ isActive }) =>
             isActive ? "font-medium text-black" : "text-primary-gray"
           }
         >
           Danh sách giao dịch
+        </NavLink>
+        <NavLink
+          to="/admin/add-partner"
+          className={({ isActive }) =>
+            isActive ? "font-medium text-black" : "text-primary-gray"
+          }
+        >
+          Thêm đối tác
         </NavLink>
       </Header>
       <Separator />

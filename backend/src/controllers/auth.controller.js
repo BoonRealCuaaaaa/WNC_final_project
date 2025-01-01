@@ -19,6 +19,10 @@ export const login = async (req, res) => {
     return res.status(402).json({ message: "Invalid password" });
   }
 
+  if (user.status === "INACTIVE") {
+    return res.status(402).json({ message: "User is inactive" });
+  }
+
   const payload = { id: user.id, username: user.username, role: user.role };
   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN, {
     expiresIn: "2h",
@@ -41,14 +45,12 @@ export const login = async (req, res) => {
     refreshToken = refreshToken.refreshToken;
   }
 
-  return res
-    .status(200)
-    .json({
-      accessToken,
-      refreshToken,
-      role: user.role,
-      username: user.username,
-    });
+  return res.status(200).json({
+    accessToken,
+    refreshToken,
+    role: user.role,
+    username: user.username,
+  });
 };
 
 export const refreshToken = async (req, res) => {
@@ -124,6 +126,11 @@ export const resetPassword = async (req, res) => {
   }
 
   const user = customer.user;
+
+  if (user.status === "INACTIVE") {
+    return res.status(402).json({ message: "User is inactive" });
+  }
+
   const hashedPassword = await hashPassword(password);
   user.password = hashedPassword;
   await user.save();
@@ -136,9 +143,15 @@ export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
     const user = await models.Customer.findOne({ where: { email } });
+
     if (!user) {
       return res.status(404).json({ message: "Email does not exist" });
     }
+
+    if (user.status === "INACTIVE") {
+      return res.status(402).json({ message: "User is inactive" });
+    }
+
     const otp = generateOTP();
     user.otp = otp;
     user.otpExpiredAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -152,7 +165,6 @@ export const forgotPassword = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   const { username, oldPassword, newPassword } = req.body;
-  console.log(req.user);
   const user = await models.User.findByPk(req.user.id);
 
   if (!(await comparePassword(oldPassword, user.password))) {

@@ -1,7 +1,15 @@
 import express from "express";
 import validateMiddleware from "../middlewares/ajv-validate.middleware.js";
-import { cancelDebit, createDebit, getCreatedDebit, getReceivedDebit } from "../controllers/debit.controller.js";
-import { cancelDebitSchema, createDebitSchema } from "./../schemas/debit.schema.js";
+import {
+  cancelDebit,
+  createDebit,
+  getCreatedDebit,
+  getReceivedDebit,
+} from "../controllers/debit.controller.js";
+import {
+  cancelDebitSchema,
+  createDebitSchema,
+} from "./../schemas/debit.schema.js";
 
 const router = express.Router();
 

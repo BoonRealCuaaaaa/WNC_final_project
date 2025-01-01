@@ -1,7 +1,12 @@
 import { loginApi } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { setAccessToken, setRefreshToken, setRole, setUserName } from "@/utils/auth";
+import {
+  setAccessToken,
+  setRefreshToken,
+  setRole,
+  setUserName,
+} from "@/utils/auth";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "antd";
 import { AxiosError } from "axios";
@@ -43,6 +48,9 @@ const CustomerTab = () => {
           break;
         case "Invalid password":
           translateMessage = "Mật khẩu không đúng";
+          break;
+        case "User is inactive":
+          translateMessage = "Tài khoản của bạn đã bị khóa";
           break;
         default:
           translateMessage = "Đã có lỗi xảy ra";

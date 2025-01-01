@@ -28,6 +28,8 @@ initializeSocket(server);
 
 const port = process.env.PORT || 3000;
 
+console.log("EHE");
+
 app.use("/auth", authRouter);
 app.use("/interbanks", interbankRouter);
 app.use("/notification", verifyToken, notificationRouter);

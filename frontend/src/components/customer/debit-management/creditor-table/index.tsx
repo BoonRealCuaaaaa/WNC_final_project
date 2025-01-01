@@ -44,6 +44,14 @@ const CreditorTable = () => {
       });
       reFetchDebits();
     },
+    onError: () => {
+      toast({
+        title: "Tạo nhắc nợ thất bại",
+        description:
+          "Bạn đã tạo nhắc nợ thất bại, vui lòng kiểm tra lại thông tin và thử lại sau",
+        variant: "destructive",
+      });
+    },
   });
 
   const { mutate: checkExist } = useMutation({
@@ -87,6 +95,13 @@ const CreditorTable = () => {
       toast({
         title: "Hủy nhắc nợ thành công",
         description: "Bạn đã hủy nhắc nợ thành công",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hủy nhắc nợ thất bại",
+        description: "Bạn đã hủy nhắc nợ thất bại, vui lòng thử lại sau",
+        variant: "destructive",
       });
     },
   });

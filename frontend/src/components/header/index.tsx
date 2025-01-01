@@ -31,7 +31,9 @@ const Header = React.forwardRef<
     {
       key: "change-password",
       label: (
-        <div onClick={() => navigate("/change-password")}>Đổi mật khẩu</div>
+        <div onClick={() => navigate("/change-password")}>
+          Quản lý tài khoản
+        </div>
       ),
     },
     {

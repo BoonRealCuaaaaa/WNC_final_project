@@ -69,36 +69,43 @@ export const updateTeller = async (req, res) => {
   const { tellerId } = req.params;
   const t = await sequelize.transaction();
 
-  const {username, email, phone, fullName} = req.body;
+  const { username, email, phone, fullName } = req.body;
   console.log(req.body);
   try {
-    if (fullName.length != null && email.length != null && phone.length != null) {
+    if (
+      fullName.length != null &&
+      email.length != null &&
+      phone.length != null
+    ) {
       await models.Teller.update(
         {
           fullName: fullName,
           email: email,
           phone: phone,
         },
-        {where: {id: +tellerId}, transaction: t}
+        { where: { id: +tellerId }, transaction: t }
       );
     }
 
     if (username.length != null) {
-      const teller = await models.Teller.findOne({where: {id: tellerId}, transaction: t});
+      const teller = await models.Teller.findOne({
+        where: { id: tellerId },
+        transaction: t,
+      });
 
       await models.User.update(
         {
           username: username,
         },
-        {where: {id: teller.userId}, transaction: t}
+        { where: { id: teller.userId }, transaction: t }
       );
     }
 
     await t.commit();
-    res.status(200).json({updated: true});
+    res.status(200).json({ updated: true });
   } catch (error) {
     await t.rollback();
-    res.status(500).json({ error: error.message , updated: false});
+    res.status(500).json({ error: error.message, updated: false });
   }
 };
 
@@ -106,12 +113,12 @@ export const deleteTeller = async (req, res) => {
   const { tellerId } = req.params;
   try {
     const result = await models.Teller.destroy({ where: { id: +tellerId } });
-    
+
     if (result > 0) {
-      return res.status(200).json({deleted: true});
+      return res.status(200).json({ deleted: true });
     }
 
-    res.status(200).json({deleted: false});
+    res.status(200).json({ deleted: false });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -124,4 +131,18 @@ export const getTransactions = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
+
+export const addPartner = async (req, res) => {
+  const { bankName, domain, partnerPublicKey, ourPrivateKey, ourPublicKey } =
+    req.body;
+  const partner = await models.Partners.create({
+    bankName: bankName,
+    domain: domain,
+    partenerPublicKey: partnerPublicKey,
+    ourPrivateKey: ourPrivateKey,
+    ourPublicKey: ourPublicKey,
+  });
+
+  res.status(200).json(partner);
 };
