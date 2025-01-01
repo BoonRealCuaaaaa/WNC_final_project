@@ -160,7 +160,6 @@ const CustomerManagement = () => {
       reFetchCustomers();
     },
     onError: (error: AxiosError<{ message: string }>) => {
-      console.log(error.response?.data.message);
       if (error.response?.data.message === "Username already exists") {
         setCreateAccountError("username", {
           type: "manual",
@@ -174,7 +173,6 @@ const CustomerManagement = () => {
         });
       }
       if (error.response?.data.message === "Username and email already exist") {
-        console.log("Username and email already exist");
         setCreateAccountError("username", {
           type: "manual",
           message: "Tên đăng nhập đã tồn tại",
@@ -183,6 +181,14 @@ const CustomerManagement = () => {
           type: "manual",
           message: "Email đã tồn tại",
         });
+      }
+      if (!error.response?.data) {
+        toast({
+          title: "Lỗi",
+          description: "Có lỗi xảy ra khi tạo tài khoản",
+        });
+        resetCreateAccountForm();
+        setIsCreateAccountModalVisible(false);
       }
     },
   });
@@ -195,6 +201,7 @@ const CustomerManagement = () => {
     email: string;
   }) => {
     createCustomer(data);
+    resetCreateAccountForm();
   };
 
   const navigate = useNavigate();

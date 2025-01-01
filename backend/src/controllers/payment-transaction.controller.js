@@ -9,7 +9,7 @@ import {
   EXTERNAL_TRANSACTION_FEE,
 } from "../constants/transaction-fee.js";
 import "dotenv/config";
-import {PGPPayTransferApi} from "./interbank.controller.js";
+import { PGPPayTransferApi } from "./interbank.controller.js";
 
 export const generateOtpForDebit = async (req, res) => {
   const { debitId } = req.body;
@@ -139,87 +139,92 @@ export const payDebit = async (req, res) => {
 };
 
 export const getTransactionHistory = async (req, res) => {
-  let id;
-  if (req.user.role === "TELLER") {
-    id = req.params.id;
-  }
-  if (req.user.role === "CUSTOMER") {
-    id = req.user.id;
-  }
   try {
+    const id = req.user.role === "TELLER" ? req.params.id : req.user.id;
     const account = await models.Paymentaccount.findOne({
       where: { customerId: id },
       attributes: ["accountNumber"],
     });
-
-    if (!account) {
+    if (!account)
       return res.status(404).json({ error: "Payment account not found." });
-    }
 
     const accountNumber = account.accountNumber;
 
-    const transactions = await models.Paymenttransaction.findAll({
-      where: {
-        [Op.or]: [{ srcAccount: accountNumber }, { desAccount: accountNumber }],
-      },
-      order: [["createdAt", "DESC"]],
-    });
+    let transactions;
+
+    if (req.user.role !== "TELLER") {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      transactions = await models.Paymenttransaction.findAll({
+        where: {
+          [Op.or]: [
+            { srcAccount: accountNumber },
+            { desAccount: accountNumber },
+          ],
+          createdAt: { [Op.gte]: thirtyDaysAgo },
+        },
+        order: [["createdAt", "DESC"]],
+      });
+    } else {
+      transactions = await models.Paymenttransaction.findAll({
+        where: {
+          [Op.or]: [
+            { srcAccount: accountNumber },
+            { desAccount: accountNumber },
+          ],
+        },
+        order: [["createdAt", "DESC"]],
+      });
+    }
 
     const transactionIds = transactions.map((tx) => tx.id);
 
     const debits = await models.Debits.findAll({
-      where: {
-        paymentTransactionsId: {
-          [Op.in]: transactionIds,
-        },
-      },
+      where: { paymentTransactionsId: { [Op.in]: transactionIds } },
       attributes: ["paymentTransactionsId"],
     });
 
-    // Extract unique related account numbers
-    const relatedAccountNumbers = transactions.map((tx) =>
-      tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount
-    );
-    const uniqueRelatedAccounts = [...new Set(relatedAccountNumbers)];
+    const uniqueRelatedAccounts = [
+      ...new Set(
+        transactions.map((tx) =>
+          tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount
+        )
+      ),
+    ];
 
-    // Bulk fetch related Customers
-    const relatedCustomers = await models.Customer.findAll({
-      include: {
-        model: models.Paymentaccount,
-        as: "paymentaccounts",
+    const [relatedCustomers, relatedBeneficiaries] = await Promise.all([
+      models.Customer.findAll({
+        include: {
+          model: models.Paymentaccount,
+          as: "paymentaccounts",
+          where: { accountNumber: uniqueRelatedAccounts },
+          attributes: ["accountNumber", "balance"],
+        },
+        attributes: ["id", "fullName"],
+      }),
+      models.Beneficiaries.findAll({
         where: { accountNumber: uniqueRelatedAccounts },
-        attributes: [],
-      },
-      attributes: ["id", "fullName"],
-    });
+        attributes: ["accountNumber", "name", "shortName"],
+      }),
+    ]);
 
-    // Bulk fetch related Beneficiaries
-    const relatedBeneficiaries = await models.Beneficiaries.findAll({
-      where: {
-        accountNumber: uniqueRelatedAccounts,
-        customerId: id,
-      },
-      attributes: ["accountNumber", "name"],
-    });
-
-    // Create maps for quick lookup
+    console.log("relatedCustomers", relatedCustomers);
     const customerMap = new Map();
     relatedCustomers.forEach((customer) => {
-      customer.paymentaccounts.forEach((account) => {
-        customerMap.set(account.accountNumber, customer.fullName);
-      });
+      if (customer.paymentaccounts) {
+        customer.paymentaccounts.forEach((acc) =>
+          customerMap.set(acc.accountNumber, customer.fullName)
+        );
+      }
     });
 
     const beneficiaryMap = new Map();
-    relatedBeneficiaries.forEach((beneficiary) => {
-      beneficiaryMap.set(beneficiary.accountNumber, beneficiary.name);
-    });
+    relatedBeneficiaries.forEach((b) =>
+      beneficiaryMap.set(b.accountNumber, b.name || b.shortName)
+    );
 
-    // Assemble transaction history with type and related person
     const transactionsWithType = transactions.map((tx) => {
-      const isDebit = debits.some(
-        (debit) => debit.paymentTransactionsId === tx.id
-      );
+      const isDebit = debits.some((d) => d.paymentTransactionsId === tx.id);
       const relatedAccount =
         tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount;
       const relatedPerson =
@@ -227,6 +232,8 @@ export const getTransactionHistory = async (req, res) => {
         beneficiaryMap.get(relatedAccount) ||
         "Unknown";
 
+      const relatedBank =
+        tx.srcAccount === accountNumber ? tx.desBankName : tx.srcBankName;
       return {
         ...tx.dataValues,
         type: isDebit
@@ -235,9 +242,9 @@ export const getTransactionHistory = async (req, res) => {
           ? "Chuyển khoản"
           : "Nhận tiền",
         relatedPerson,
-        accountNumber:
-          tx.srcAccount === accountNumber ? tx.desAccount : tx.srcAccount,
+        accountNumber: relatedAccount,
         customerAccountNumber: accountNumber,
+        relatedBank: relatedBank,
       };
     });
 
