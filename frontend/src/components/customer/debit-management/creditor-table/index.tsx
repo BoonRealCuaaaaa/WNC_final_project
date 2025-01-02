@@ -413,14 +413,14 @@ const CreditorTable = () => {
             dataSource={beneficiaries?.data}
             renderItem={(item: {
               id: number;
-              name: string;
+              shortName: string;
               accountNumber: string;
             }) => (
               <List.Item
                 onClick={() => {
                   handleSelect(item);
                   setValue("debtorAccount", item.accountNumber);
-                  setValue("debtName", item.name);
+                  setValue("debtName", item.shortName);
                   setIsOpenBeneficiaryModal(false);
                 }}
                 className={`cursor-pointer ${
@@ -428,8 +428,10 @@ const CreditorTable = () => {
                 }`}
               >
                 <List.Item.Meta
-                  avatar={<Avatar size="large">{item.name.charAt(0)}</Avatar>}
-                  title={item.name}
+                  avatar={
+                    <Avatar size="large">{item.shortName.charAt(0)}</Avatar>
+                  }
+                  title={item.shortName}
                   description={item.accountNumber}
                 />
               </List.Item>

@@ -58,7 +58,6 @@ export const generateOtpForDebit = async (req, res) => {
     });
 
     debit.paymentTransactionsId = newPaymentTransaction.id;
-    console.log(debit);
     debit.save();
     newPaymentTransaction.save();
   }
@@ -129,7 +128,7 @@ export const payDebit = async (req, res) => {
     title: "Đã thanh toán nợ",
     message: `${
       debtor.fullName
-    } đã thanh toán nợ cho bạn với số tiền ${amount.toString()}`,
+    } đã thanh toán nợ cho bạn với số tiền ${parseInt(debit.amount)}`,
     customerId: debit.creditor,
     isRead: false,
   });

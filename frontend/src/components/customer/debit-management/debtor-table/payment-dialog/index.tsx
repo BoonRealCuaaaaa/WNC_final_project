@@ -52,7 +52,6 @@ const PaymentDialog = ({ record, refetchDebits, preOpen = false }) => {
       setOtp("");
       setCurrentStep(0);
       setOpenPaymentModal(false);
-      console.log(error);
 
       const errorMessage =
         (error.response?.data as { message: string }).message ==

@@ -18,6 +18,7 @@ import {
   verifyTellerAccount,
   verifyAdminAccount,
 } from "./src/middlewares/verify-teller-account.middleware.js";
+import { sendOtpMail } from "./src/services/email.js";
 
 const app = express();
 app.use(express.json());
@@ -27,8 +28,6 @@ const server = http.createServer(app);
 initializeSocket(server);
 
 const port = process.env.PORT || 3000;
-
-console.log("EHE");
 
 app.use("/auth", authRouter);
 app.use("/interbanks", interbankRouter);

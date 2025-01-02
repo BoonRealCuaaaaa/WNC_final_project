@@ -23,7 +23,7 @@ export const createBeneficiary = async (req, res) => {
   const beneficiary = await models.Beneficiaries.findOne({
     where: { bankName, accountNumber, customerId: customer.id },
   });
-  
+
   if (beneficiary) {
     return res
       .status(400)

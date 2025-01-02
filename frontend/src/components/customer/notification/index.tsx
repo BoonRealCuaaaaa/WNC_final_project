@@ -42,6 +42,7 @@ const NotificationBell = () => {
         if (data.title == "Đã thanh toán nợ") {
           queryClient.invalidateQueries({ queryKey: ["debit-creditor"] });
         }
+
         queryClient.setQueryData(
           ["notifications"],
           (oldData: {
@@ -68,8 +69,6 @@ const NotificationBell = () => {
 
   const handleNotificationClick = (id, relatedDebitUrl) => {
     readNotification(id);
-
-    console.log("HEHE", relatedDebitUrl);
 
     if (relatedDebitUrl) {
       navigate(relatedDebitUrl);

@@ -1,13 +1,13 @@
 import { Avatar, Input, Table, Tag } from "antd";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
 import { getReceivedDebitApi } from "@/api/debits.api";
 import { useQuery } from "@tanstack/react-query";
 
 import PaymentDialog from "./payment-dialog";
 import CancelDialog from "./cancel-dialog";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 
 const DebtorTable = () => {
   const {
@@ -19,8 +19,15 @@ const DebtorTable = () => {
     queryFn: getReceivedDebitApi,
   });
 
+  const location = useLocation();
+
+  const [payDebit, setPayDebit] = useState(null);
   const [searchParams] = useSearchParams();
-  const payDebit = searchParams.get("payDebit");
+
+  useEffect(() => {
+    setPayDebit(searchParams.get("payDebit"));
+    console.log("HEHE");
+  }, [location.search, searchParams, payDebit]);
 
   const columns = [
     {
@@ -89,7 +96,7 @@ const DebtorTable = () => {
             <PaymentDialog
               record={record}
               refetchDebits={refetchDebits}
-              preOpen={payDebit == record.id ? true : false}
+              preOpen={payDebit == record.id}
             />
             <CancelDialog record={record} refetchDebits={refetchDebits} />
           </div>
@@ -130,6 +137,7 @@ const DebtorTable = () => {
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           )
           .map((item) => ({ ...item, key: item.id }))}
+        key={payDebit}
       />
     </div>
   );

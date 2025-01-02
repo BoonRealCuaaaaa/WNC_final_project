@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS wnc_final_project;
 
 USE wnc_final_project;
 
-CREATE TABLE User (
+CREATE TABLE user (
   id INT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(255),
   password VARCHAR(255),
