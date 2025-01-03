@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
   setAccessToken,
+  setEmail,
   setRefreshToken,
   setRole,
   setUserName,
@@ -35,6 +36,7 @@ const CustomerTab = () => {
         setRefreshToken(response.data.refreshToken);
         setRole(response.data.role);
         setUserName(response.data.username);
+        setEmail(response.data.email);
         navigate("/");
       }
     },

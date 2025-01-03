@@ -23,8 +23,9 @@ export const initializeSocket = (server) => {
         console.log("HEHE");
 
         const userId = user.id;
+        console.log(userId);
         const currentCustomer = await models.Customer.findOne({
-          where: { id: userId },
+          where: { userId: userId },
         });
         connectedUsers[currentCustomer.id] = socket.id;
 

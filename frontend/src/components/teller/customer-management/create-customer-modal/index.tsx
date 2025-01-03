@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import * as Form from "@radix-ui/react-form";
 import { Modal } from "antd";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,6 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   control,
 }) => {
   const password = useWatch({ control, name: "password" });
-  const [showPassword, setShowPassword] = useState(false);
   return (
     <Modal
       title={<div className="text-xl">Tạo tài khoản khách hàng</div>}
@@ -87,7 +86,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
             <div className="relative">
               <input
                 className="h-9 w-full inline-flex justify-center items-center px-2 border border-gray-300 rounded-lg"
-                type={showPassword ? "text" : "password"}
+                type="password"
                 placeholder="Nhập mật khẩu..."
                 autoComplete="new-password"
                 {...register("password", {
@@ -102,13 +101,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
                   },
                 })}
               />
-              <button
-                type="button"
-                className="absolute right-2 top-2 text-sm"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? "Ẩn" : "Hiện"}
-              </button>
+              {/* Removed toggle button */}
             </div>
           </Form.Control>
           <div className="flex justify-between my-1">

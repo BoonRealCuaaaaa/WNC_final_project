@@ -1,7 +1,13 @@
 import { loginApi } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { setAccessToken, setRefreshToken, setRole } from "@/utils/auth";
+import {
+  setAccessToken,
+  setEmail,
+  setRefreshToken,
+  setRole,
+  setUserName,
+} from "@/utils/auth";
 import { useMutation } from "@tanstack/react-query";
 import { Input } from "antd";
 import { AxiosError } from "axios";
@@ -29,6 +35,8 @@ const AdminTab = () => {
         setAccessToken(response.data.accessToken);
         setRefreshToken(response.data.refreshToken);
         setRole(response.data.role);
+        setUserName(response.data.username);
+        setEmail(response.data.email);
         navigate("/admin");
       }
     },

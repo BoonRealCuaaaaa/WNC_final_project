@@ -45,11 +45,19 @@ export const login = async (req, res) => {
     refreshToken = refreshToken.refreshToken;
   }
 
+  let email;
+  if (user.role === "CUSTOMER") {
+    const customer = await models.Customer.findOne({
+      where: { userId: user.id },
+    });
+    email = customer ? customer.email : null;
+  }
   return res.status(200).json({
     accessToken,
     refreshToken,
     role: user.role,
     username: user.username,
+    email: email,
   });
 };
 
