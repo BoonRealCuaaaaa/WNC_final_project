@@ -36,6 +36,7 @@ import { thoudsandsSeparator } from "@/lib/string";
 import { bankTransferApi, checkExistApi, getPaymentAccountApi } from "@/api/customer.api";
 import { FeePayer, PaymentTransaction } from "@/types/PaymentTransaction";
 import { checkExistInterbankAccountsApi } from "@/api/interbank";
+import useAppStore from "@/store";
 
 const formSchema = z.object({
     bankName: z.string()
@@ -68,11 +69,12 @@ enum MethodEnum {
 interface Props {
     receiver: string;
     setReceiver: (receiverName: string) => void
-    onCreateSuccess: (PaymentTransaction) => void,
-    paymentTransaction: PaymentTransaction
+    onCreateSuccess: (data: PaymentTransaction, email: string) => void,
 }
 
-export default function CreateTransactionForm({receiver, setReceiver, onCreateSuccess, paymentTransaction}: Props) {
+export default function CreateTransactionForm({receiver, setReceiver, onCreateSuccess}: Props) {
+    const paymentTransaction = useAppStore((state) => state.paymentTransaction);
+
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -165,7 +167,7 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
                     desBankName: response.data.desBankName,
                     fee: response.data.fee,
                     feePayer: response.data.feePayer
-                })
+                }, response.data.email)
             }
         },
         onError: (error: AxiosError) => {

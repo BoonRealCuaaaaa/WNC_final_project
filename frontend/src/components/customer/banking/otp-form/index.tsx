@@ -20,18 +20,17 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { useMutation } from "@tanstack/react-query"
-import { FeePayer, PaymentTransaction } from "@/types/PaymentTransaction";
+import { FeePayer } from "@/types/PaymentTransaction";
 import { formatCurrency } from "@/lib/string";
 import { payBankTransferApi } from "@/api/customer.api";
 import { useState } from "react";
 import { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
+import useAppStore from "@/store";
 
 interface Props {
     receiverName: string;
     onBankingResult?: (boolean) => void,
     onReturn?: () => void,
-    paymentTransaction: PaymentTransaction
 }
 
 const formSchema = z.object({
@@ -41,7 +40,9 @@ const formSchema = z.object({
         }),
 })
 
-export default function BankingOtpForm({ receiverName, onBankingResult, onReturn, paymentTransaction }: Props) {
+export default function BankingOtpForm({ receiverName, onBankingResult, onReturn }: Props) {
+    const { paymentTransaction, email } = useAppStore((state) => state);
+
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -154,7 +155,7 @@ export default function BankingOtpForm({ receiverName, onBankingResult, onReturn
                                 )}
                             />
                         </FormMainContent>
-                        <div className="text-sm/4">Nhập mã xác thực được gửi đến email <b>test@gmail.com</b> của bạn</div>
+                        <div className="text-sm/4">Nhập mã xác thực được gửi đến email <b>{email}</b> của bạn</div>
                         <Button variant="link" className="p-0">Gửi lại mã xác thực</Button>
                         <CardFooter className="w-full">
                             <LoadingButton className="w-full" isLoading={isSubmitting}>Xác nhận</LoadingButton>
