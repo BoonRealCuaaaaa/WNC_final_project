@@ -4,7 +4,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Button, LoadingButton } from "@/components/ui/button"
+import { LoadingButton } from "@/components/ui/button"
 import {
     Form,
     FormControl,
@@ -29,7 +29,7 @@ import { useEffect, useState } from "react"
 import { toast } from "@/hooks/use-toast"
 import { AxiosError } from "axios"
 import BankingMethod from "../banking-method";
-import { BookUser, CreditCardIcon, LandmarkIcon } from "lucide-react";
+import { CreditCardIcon, LandmarkIcon } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { thoudsandsSeparator } from "@/lib/string";
@@ -37,6 +37,8 @@ import { bankTransferApi, checkExistApi, getPaymentAccountApi } from "@/api/cust
 import { FeePayer, PaymentTransaction } from "@/types/PaymentTransaction";
 import { checkExistInterbankAccountsApi } from "@/api/interbank";
 import useAppStore from "@/store";
+import ChooseBenificiaryList from "./choose-beneficiary-list";
+import { Beneficiary } from "@/types/Beneficiary";
 
 const formSchema = z.object({
     bankName: z.string()
@@ -72,7 +74,7 @@ interface Props {
     onCreateSuccess: (data: PaymentTransaction, email: string) => void,
 }
 
-export default function CreateTransactionForm({receiver, setReceiver, onCreateSuccess}: Props) {
+export default function CreateTransactionForm({ receiver, setReceiver, onCreateSuccess }: Props) {
     const paymentTransaction = useAppStore((state) => state.paymentTransaction);
 
     // 1. Define your form.
@@ -129,22 +131,22 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
     const [balance, setBalance] = useState(0);
 
     const { mutate: mutatePaymmentAccount } = useMutation({
-            mutationFn: getPaymentAccountApi,
-            onSuccess: (response) => {
-                if (response.status === 200) {
-                    setBalance(response.data.balance);
-                }
-            },
-            onError: (error: AxiosError) => {
-                const message = (error.response?.data as { message: string }).message;
-    
-                toast({
-                    variant: "destructive",
-                    title: "Tải thông tin tài khoản thanh toán thất bại",
-                    description: message,
-                });
-            },
-        });
+        mutationFn: getPaymentAccountApi,
+        onSuccess: (response) => {
+            if (response.status === 200) {
+                setBalance(response.data.balance);
+            }
+        },
+        onError: (error: AxiosError) => {
+            const message = (error.response?.data as { message: string }).message;
+
+            toast({
+                variant: "destructive",
+                title: "Tải thông tin tài khoản thanh toán thất bại",
+                description: message,
+            });
+        },
+    });
 
     useEffect(() => {
         mutatePartners();
@@ -174,7 +176,7 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
             setIsSubmitting(false);
 
             const message = (error.response?.data as { message: string }).message;
-            
+
             toast({
                 variant: "destructive",
                 title: "Tạo lệnh chuyển khoản thất bại",
@@ -186,7 +188,7 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
     const [method, setMethod] = useState<MethodEnum>(MethodEnum.LOCAL);
 
     const { mutate: mutateReceiver } = useMutation({
-        mutationFn:  checkExistApi,
+        mutationFn: checkExistApi,
         onSuccess: (response) => {
             console.log(response.data);
             if (response.status === 200) {
@@ -202,7 +204,7 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
             })
         },
     });
-    
+
     const { mutate: mutateInterbankReceiver } = useMutation({
         mutationFn: checkExistInterbankAccountsApi,
         onSuccess: (response) => {
@@ -225,6 +227,21 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
         setMethod(newMethod);
         if (newMethod === MethodEnum.LOCAL) form.setValue("bankName", import.meta.env.VITE_BANK_NAME);
         else form.setValue("bankName", "");
+    }
+
+    const mutateReceiverAllSources = () => {
+        if (method === MethodEnum.INTERBANK) {
+            mutateInterbankReceiver({ bankName: form.getValues("bankName"), accountNumber: form.getValues("accountNumber") });
+        }
+        else {
+            mutateReceiver(form.getValues("accountNumber"))
+        }
+    }
+
+    const onBeneficiarySelect = (beneficiary: Beneficiary) => {
+        form.setValue("bankName", beneficiary.bank);
+        form.setValue("accountNumber", beneficiary.accountNumber);
+        mutateReceiverAllSources();
     }
 
     return (
@@ -281,8 +298,8 @@ export default function CreateTransactionForm({receiver, setReceiver, onCreateSu
                                         <FormLabel>Người nhận</FormLabel>
                                         <FormControl>
                                             <div>
-                                                <Input placeholder="Nhập số tài khoản người nhận tiền..." {...field} type="number" onBlur={(event) => method === MethodEnum.INTERBANK ? mutateInterbankReceiver({bankName: form.getValues("bankName"), accountNumber: event.target.value}) : mutateReceiver(event.target.value)}/>
-                                                <Button variant="outline-primary"><BookUser /></Button>
+                                                <Input placeholder="Nhập số tài khoản người nhận tiền..." {...field} type="number" onBlur={mutateReceiverAllSources} />
+                                                <ChooseBenificiaryList onBeneficiarySelect={onBeneficiarySelect}/>
                                             </div>
                                         </FormControl>
                                         <div className="px-3 text-sm font-semibold text-primary">{receiver}</div>
