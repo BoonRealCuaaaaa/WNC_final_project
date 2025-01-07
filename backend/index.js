@@ -18,7 +18,8 @@ import {
   verifyTellerAccount,
   verifyAdminAccount,
 } from "./src/middlewares/verify-teller-account.middleware.js";
-import { sendOtpMail } from "./src/services/email.js";
+import SwaggerUi from "swagger-ui-express";
+import { specs } from "./src/lib/utils/swagger/index.js";
 
 const app = express();
 app.use(express.json());
@@ -29,6 +30,7 @@ initializeSocket(server);
 
 const port = process.env.PORT || 3000;
 
+app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(specs));
 app.use("/auth", authRouter);
 app.use("/interbanks", interbankRouter);
 app.use("/notification", verifyToken, notificationRouter);
