@@ -5,8 +5,9 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "API Documentation",
+      title: "Interbank API",
       version: "1.0.0",
+      description: "API for interbank transactions",
     },
     components: {
       securitySchemes: {
