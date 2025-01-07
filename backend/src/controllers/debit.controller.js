@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import "dotenv/config";
 import { sendNotification } from "../services/socket.js";
+import { not } from "ajv/dist/compile/codegen/index.js";
 
 export const createDebit = async (req, res) => {
   const { accountNumber, amount, content } = req.body;
@@ -28,6 +29,16 @@ export const createDebit = async (req, res) => {
     debtor: debtorAccount.customerId,
     status: "Chưa thanh toán",
   });
+
+  const notification = await models.Notification.create({
+    title: "Nợ mới đã được tạo",
+    message: `Nợ được gửi từ ${creditor.fullName}`,
+    customerId: debtorAccount.customerId,
+    isRead: false,
+    relatedDebitUrl: `/debit-management?payDebit=${debitEntity.id}`,
+  });
+
+  sendNotification(debtorAccount.customerId, notification);
 
   return res.status(201).json({ message: "Debit created" });
 };

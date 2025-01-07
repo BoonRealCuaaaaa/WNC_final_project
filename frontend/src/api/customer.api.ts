@@ -5,7 +5,7 @@ export const checkExistApi = (accountNumber) => {
 };
 
 export const checkUsernameExistApi = (username) => {
-   return instance.post("/customer/username/status", { username });
+  return instance.post("/customer/username/status", { username });
 };
 
 export const getPaymentHistoryApi = () => {
@@ -23,16 +23,31 @@ export const changePasswordApi = async ({ oldPassword, newPassword }) => {
   });
 };
 
-export const bankTransferApi = async ({amount, content, desAccount, desBankName, feePayer}) => {
+export const bankTransferApi = async ({
+  amount,
+  content,
+  desAccount,
+  desBankName,
+  feePayer,
+}) => {
   console.log(desBankName);
   return instance.post("/payment-transaction/bank-transfer", {
-    amount, content, desAccount, desBankName, feePayer
-  })
-}
+    amount,
+    content,
+    desAccount,
+    desBankName,
+    feePayer,
+  });
+};
 
-export const payBankTransferApi = async ({id, otp}) => {
-  console.log({id, otp});
+export const payBankTransferApi = async ({ id, otp }) => {
+  console.log({ id, otp });
   return instance.post("/payment-transaction/bank-transfer/pay", {
-    id, otp
-  })
-}
+    id,
+    otp,
+  });
+};
+
+export const closeAccountApi = async (password) => {
+  return instance.post("/customer/close-account", { password });
+};

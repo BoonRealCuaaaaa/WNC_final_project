@@ -44,6 +44,14 @@ const CreditorTable = () => {
       });
       reFetchDebits();
     },
+    onError: () => {
+      toast({
+        title: "Tạo nhắc nợ thất bại",
+        description:
+          "Bạn đã tạo nhắc nợ thất bại, vui lòng kiểm tra lại thông tin và thử lại sau",
+        variant: "destructive",
+      });
+    },
   });
 
   const { mutate: checkExist } = useMutation({
@@ -87,6 +95,13 @@ const CreditorTable = () => {
       toast({
         title: "Hủy nhắc nợ thành công",
         description: "Bạn đã hủy nhắc nợ thành công",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Hủy nhắc nợ thất bại",
+        description: "Bạn đã hủy nhắc nợ thất bại, vui lòng thử lại sau",
+        variant: "destructive",
       });
     },
   });
@@ -398,14 +413,14 @@ const CreditorTable = () => {
             dataSource={beneficiaries?.data}
             renderItem={(item: {
               id: number;
-              name: string;
+              shortName: string;
               accountNumber: string;
             }) => (
               <List.Item
                 onClick={() => {
                   handleSelect(item);
                   setValue("debtorAccount", item.accountNumber);
-                  setValue("debtName", item.name);
+                  setValue("debtName", item.shortName);
                   setIsOpenBeneficiaryModal(false);
                 }}
                 className={`cursor-pointer ${
@@ -413,8 +428,10 @@ const CreditorTable = () => {
                 }`}
               >
                 <List.Item.Meta
-                  avatar={<Avatar size="large">{item.name.charAt(0)}</Avatar>}
-                  title={item.name}
+                  avatar={
+                    <Avatar size="large">{item.shortName.charAt(0)}</Avatar>
+                  }
+                  title={item.shortName}
                   description={item.accountNumber}
                 />
               </List.Item>

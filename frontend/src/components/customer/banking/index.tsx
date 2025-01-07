@@ -17,9 +17,9 @@ export default function Banking() {
         setStep("OTP");
     }
 
-    const onBankingResult = () => {
-        setStep("RESULT");
-    }
+  const onBankingResult = () => {
+    setStep("RESULT");
+  };
 
     const onReturnFromOTP = () => {
         updatePaymentTransaction({

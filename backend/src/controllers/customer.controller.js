@@ -68,3 +68,21 @@ export const changePassword = async (req, res) => {
   await user.save();
   return res.status(200).json({ message: "Password changed" });
 };
+
+export const closeAccount = async (req, res) => {
+  const password = req.body.password;
+  const user = await models.User.findByPk(req.user.id);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  if (!(await comparePassword(password, user.password))) {
+    return res.status(402).json({ message: "Password is incorrect" });
+  }
+
+  user.status = "INACTIVE";
+  await user.save();
+
+  return res.status(200).json({ message: "Account closed" });
+};

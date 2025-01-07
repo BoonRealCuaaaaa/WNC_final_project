@@ -19,9 +19,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 
-const PaymentDialog = ({ record, refetchDebits }) => {
+const PaymentDialog = ({ record, refetchDebits, preOpen = false }) => {
   const { toast } = useToast();
-  const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [openPaymentModal, setOpenPaymentModal] = useState(preOpen);
   const [currentStep, setCurrentStep] = useState(0);
   const [otp, setOtp] = useState("");
 
@@ -52,7 +52,6 @@ const PaymentDialog = ({ record, refetchDebits }) => {
       setOtp("");
       setCurrentStep(0);
       setOpenPaymentModal(false);
-      console.log(error);
 
       const errorMessage =
         (error.response?.data as { message: string }).message ==

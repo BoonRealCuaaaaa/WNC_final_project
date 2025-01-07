@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Button, LoadingButton } from "@/components/ui/button"
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormHorizontalGroupFields,
-    FormItem,
-    FormLabel,
-    FormMainContent,
-    FormMessage,
-} from "@/components/ui/form"
+  Form,
+  FormControl,
+  FormField,
+  FormHorizontalGroupFields,
+  FormItem,
+  FormLabel,
+  FormMainContent,
+  FormMessage,
+} from "@/components/ui/form";
 import {
     Select,
     SelectContent,
@@ -48,16 +48,20 @@ const formSchema = z.object({
     remindName: z.string(),
 })
 
-export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => void }) {
-    // 1. Define your form.
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            bankName: "",
-            accountNumber: "",
-            remindName: "",
-        },
-    })
+export default function AddBeneficiaryForm({
+  onSuccess,
+}: {
+  onSuccess: () => void;
+}) {
+  // 1. Define your form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      bankName: "",
+      accountNumber: "",
+      remindName: "",
+    },
+  });
 
     // 2. Define a submit handler.
     function onSubmit(values: z.infer<typeof formSchema>) {
@@ -68,25 +72,25 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
         mutateCreateBeneficiary({ bankName, accountNumber, remindName: remindName !== "" ? remindName : recevier });
     }
 
-    const [bankNames, setBankNames] = useState<string[]>([]);
+  const [bankNames, setBankNames] = useState<string[]>([]);
 
-    const { mutate: mutatePartners } = useMutation({
-        mutationFn: getPartners,
-        onSuccess: (response) => {
-            if (response.status === 200) {
-                setBankNames(response.data.map((item) => item.bankName))
-            }
-        },
-        onError: (error: AxiosError) => {
-            const message = (error.response?.data as { message: string }).message;
+  const { mutate: mutatePartners } = useMutation({
+    mutationFn: getPartners,
+    onSuccess: (response) => {
+      if (response.status === 200) {
+        setBankNames(response.data.map((item) => item.bankName));
+      }
+    },
+    onError: (error: AxiosError) => {
+      const message = (error.response?.data as { message: string }).message;
 
-            toast({
-                variant: "destructive",
-                title: "Không lấy được danh sách ngân hàng",
-                description: message,
-            });
-        },
-    });
+      toast({
+        variant: "destructive",
+        title: "Không lấy được danh sách ngân hàng",
+        description: message,
+      });
+    },
+  });
 
     useEffect(() => {
         mutatePartners();
@@ -141,11 +145,13 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
         }
     }
 
-    const [submitStatus, setSubmitStatus] = useState<"default" | "submitting" | "failed" | "success">("default");
+  const [submitStatus, setSubmitStatus] = useState<
+    "default" | "submitting" | "failed" | "success"
+  >("default");
 
-    useEffect(() => {
-        if (submitStatus === "success") onSuccess();
-    }, [submitStatus])
+  useEffect(() => {
+    if (submitStatus === "success") onSuccess();
+  }, [submitStatus]);
 
     const { mutate: mutateCreateBeneficiary } = useMutation({
         mutationFn: createBeneficiaryApi,
@@ -164,7 +170,7 @@ export default function AddBeneficiaryForm({ onSuccess }: { onSuccess: () => voi
             setIsSubmitting(false);
             setSubmitStatus("failed");
 
-            const message = (error.response?.data as { message: string }).message;
+      const message = (error.response?.data as { message: string }).message;
 
             toast({
                 variant: "destructive",

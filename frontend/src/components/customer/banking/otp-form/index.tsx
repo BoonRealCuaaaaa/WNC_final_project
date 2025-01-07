@@ -1,16 +1,23 @@
 import { Button, LoadingButton } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";
 import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSeparator,
-    InputOTPSlot,
-} from "@/components/ui/input-otp"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
     Form,
     FormControl,
@@ -34,11 +41,10 @@ interface Props {
 }
 
 const formSchema = z.object({
-    otp: z.string()
-        .min(6, {
-            message: "Vui lòng đủ 6 chữ số OTP",
-        }),
-})
+  otp: z.string().min(6, {
+    message: "Vui lòng đủ 6 chữ số OTP",
+  }),
+});
 
 export default function BankingOtpForm({ receiverName, onBankingResult, onReturn }: Props) {
     const { paymentTransaction, email } = useAppStore((state) => state);
@@ -51,37 +57,38 @@ export default function BankingOtpForm({ receiverName, onBankingResult, onReturn
         },
     })
 
-    // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        mutatePayBankTransfer({
-            id: paymentTransaction.id,
-            otp: values.otp
-        })
-    }
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const { mutate: mutatePayBankTransfer } = useMutation({
-        mutationFn: payBankTransferApi,
-        onSuccess: (response) => {
-            if (response.status === 200) {
-                setIsSubmitting(false);
-                onBankingResult(true);
-            }
-        },
-        onError: (error: AxiosError) => {
-            setIsSubmitting(false);
-
-            const message = (error.response?.data as { message: string }).message;
-            
-            if (message === "OTP không hợp lệ") form.setError("otp", {
-                type: "manual",
-                message: message
-            });
-        },
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
+    mutatePayBankTransfer({
+      id: paymentTransaction.id,
+      otp: values.otp,
     });
+  }
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { mutate: mutatePayBankTransfer } = useMutation({
+    mutationFn: payBankTransferApi,
+    onSuccess: (response) => {
+      if (response.status === 200) {
+        setIsSubmitting(false);
+        onBankingResult(true);
+      }
+    },
+    onError: (error: AxiosError) => {
+      setIsSubmitting(false);
+
+      const message = (error.response?.data as { message: string }).message;
+
+      if (message === "OTP không hợp lệ")
+        form.setError("otp", {
+          type: "manual",
+          message: message,
+        });
+    },
+  });
 
     return (
         <Card className="w-[600px]">
