@@ -139,15 +139,26 @@ export const payDebit = async (req, res) => {
 
 export const getTransactionHistory = async (req, res) => {
   try {
-    const id = req.user.role === "TELLER" ? req.params.id : req.user.id;
-    const account = await models.Paymentaccount.findOne({
+    const id =
+      req.user.role === "TELLER"
+        ? req.params.id
+        : (
+            await models.Customer.findOne({
+              where: { userId: req.user.id },
+              attributes: ["id"],
+            })
+          ).id;
+
+    const paymentAccount = await models.Paymentaccount.findOne({
       where: { customerId: id },
       attributes: ["accountNumber"],
     });
-    if (!account)
+
+    console.log(paymentAccount);
+    if (!paymentAccount)
       return res.status(404).json({ error: "Payment account not found." });
 
-    const accountNumber = account.accountNumber;
+    const accountNumber = paymentAccount.accountNumber;
 
     let transactions;
 
@@ -207,7 +218,6 @@ export const getTransactionHistory = async (req, res) => {
       }),
     ]);
 
-    console.log("relatedCustomers", relatedCustomers);
     const customerMap = new Map();
     relatedCustomers.forEach((customer) => {
       if (customer.paymentaccounts) {
