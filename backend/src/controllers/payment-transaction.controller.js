@@ -404,7 +404,8 @@ export const payBankTransfer = async (req, res) => {
       transaction.srcAccount,
       transaction.content,
       partner.ourPrivateKey,
-      partner.partenerPublicKey
+      partner.partenerPublicKey,
+      partner.partenerAlgo,
     );
 
     if (success) {

@@ -4,8 +4,8 @@ import { ASYMMETRIC_ENCRYPTION_ALGORITHM } from "../../constant/encryption-algor
 dotenv.config();
 import * as openpgp from "openpgp";
 
-export const generateHash = (algorithm, data) => {
-  return createHmac(algorithm, process.env.SECRET_KEY)
+export const generateHash = (algorithm, data, secretKey) => {
+  return createHmac(algorithm, secretKey)
     .update(data)
     .digest("hex");
 };
@@ -85,4 +85,19 @@ export async function generatePGPSignature(message, privateKeyArmored) {
   } catch (error) {
     console.error("Error generating PGP signature:", error);
   }
+}
+
+export async function generateSignature(algo, data, privateKey) {
+  if (algo.toUpperCase() === 'RSA') {
+    return generateRSASignature(data, privateKey);
+  } 
+  return await generatePGPSignature(data, privateKey);
+}
+
+
+export async function verifySignature(algo, data, signature, publicKey) {
+  if (algo.toUpperCase() === 'RSA') {
+    return verifyRSASignature(data, signature, publicKey);
+  } 
+  return await verifyPGPSignature(data, signature, publicKey);
 }

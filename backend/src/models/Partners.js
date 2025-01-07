@@ -22,6 +22,14 @@ export default class Partners extends Model {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    partenerAlgo: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    partenerSecretKey: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     ourPrivateKey: {
       type: DataTypes.TEXT,
       allowNull: true

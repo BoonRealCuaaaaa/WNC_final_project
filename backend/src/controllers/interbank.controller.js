@@ -1,10 +1,14 @@
 import { models } from "../lib/utils/database/index.js";
 import axios from "axios";
-import { generateHash, generateRSASignature, verifyPGPSignature } from "../lib/utils/cryptoUtils/index.js";
+import {
+  generateHash,
+  generateSignature,
+  verifySignature,
+} from "../lib/utils/cryptoUtils/index.js";
 import "dotenv/config";
 import Decimal from "decimal.js";
 
-export const PGPSearchAccountApi = async (domain, accountNumber) => {
+export const PGPSearchAccountApi = async (domain, accountNumber, secretKey) => {
   try {
     const desUrl = `/interbanks/handle-search-interbank-account`;
     const time = Date.now();
@@ -28,39 +32,82 @@ export const PGPSearchAccountApi = async (domain, accountNumber) => {
   }
 };
 
+// export const PGPSearchAccountApi = async (domain, accountNumber, secretKey) => {
+//   try {
+//     const desUrl = `/api/transfer/external/account-info`;
+//     const time = Date.now();
+//     const bankCode = process.env.BANK_NAME || 'MyBank'
+//     const data = (
+//       await axios.post("http://" + domain + desUrl, {
+//         bank_code: bankCode,
+//         accountNumber: accountNumber,
+//         timestamp: time,
+//         hash: generateHash(
+//           "sha256",
+//           JSON.stringify({
+//             bank_code: bankCode,
+//             accountNumber: accountNumber,
+//             timestamp: time,
+//           }),
+//           secretKey
+//         ),
+//       })
+//     ).data;
+//     return { accountNumber: data.account_number, fullName: data.id };
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
-export const PGPPayTransferApi = async (ourDomain, partnerDomain, accountNumber, amount, srcAccount, content, privateKey, parnerPublicKey) => {
+export const PGPPayTransferApi = async (
+  ourDomain,
+  partnerDomain,
+  accountNumber,
+  amount,
+  srcAccount,
+  content,
+  privateKey,
+  partnerPublicKey,
+  partnerAlgo,
+  partnerSecretKey
+) => {
   const payload = {
     accountNumber,
     amount,
     srcAccount,
-    content
-  }
+    content,
+  };
 
   try {
     const desUrl = `/interbanks/handle-trade-interbank`;
     const time = Date.now();
     const data = (
-      await axios.post("http://" +partnerDomain + desUrl, {
+      await axios.post("http://" + partnerDomain + desUrl, {
         payload,
         time: time,
         domain: ourDomain,
         token: generateHash(
           "sha256",
-          desUrl + "" + time + "" + process.env.SECRET_KEY
+          desUrl + "" + time + "" + process.env.SECRET_KEY,
+          partnerSecretKey
         ),
-        signature: generateRSASignature(JSON.stringify(payload), privateKey)
+        signature: await generateSignature(process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || 'RSA', JSON.stringify(payload), privateKey),
       })
     ).data;
-    
-    const {message, signature} = data;
-    
-    const isValidSignature = await verifyPGPSignature(JSON.stringify({message}), signature, parnerPublicKey)
 
-    if (message === 'success' && isValidSignature) {
+    const { message, signature } = data;
+
+    const isValidSignature = await verifySignature(
+      partnerAlgo,
+      JSON.stringify({ message }),
+      signature,
+      partnerPublicKey
+    );
+
+    if (message === "success" && isValidSignature) {
       return true;
     }
-    
+
     return false;
   } catch (error) {
     console.error(error);
@@ -69,37 +116,31 @@ export const PGPPayTransferApi = async (ourDomain, partnerDomain, accountNumber,
 
 export const handleTradeInterbank = async (req, res) => {
   const accountNumber = req.body.payload.accountNumber || "";
-  const amount = isNaN(req.body.payload.amount) ? 0 : Number(req.body.payload.amount);
-  const srcAccount =  req.body.payload.srcAccount || '';
-  const content =  req.body.payload.content || '';
+  const amount = isNaN(req.body.payload.amount)
+    ? 0
+    : Number(req.body.payload.amount);
+  const srcAccount = req.body.payload.srcAccount || "";
+  const content = req.body.payload.content || "";
 
-  const domain = req.body.domain;
+  const partner = req['bank'];
+  const partenerAlgo = process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || 'RSA';
 
-  const failMessage = JSON.stringify({message: "fail"});
-  const successMessage = JSON.stringify({message: "success"});
-  
-  const partner = await models.Partners.findOne({where: {domain}});
+  const failMessage = JSON.stringify({ message: "fail" });
+  const successMessage = JSON.stringify({ message: "success" });
 
   if (amount < 1000) {
-    return res
-    .status(400)
-    .json({ message: "fail", signature: generateRSASignature(failMessage, partner.ourPrivateKey)});
+    return res.status(400).json({
+      message: "fail",
+      signature: await generateSignature(partenerAlgo, failMessage, partner.ourPrivateKey),
+    });
   }
 
-  if (!partner) {
-    res
-    .status(400)
-    .json({ message: "fail",signature: generateRSASignature(failMessage, partner.ourPrivateKey)});
-  }
-  
   const paymentAccount = await models.Paymentaccount.findOne({
     where: { accountNumber: accountNumber },
   });
 
   const balance = new Decimal(paymentAccount.balance);
-  paymentAccount.balance = balance
-      .plus(new Decimal(amount))
-      .toString();
+  paymentAccount.balance = balance.plus(new Decimal(amount)).toString();
 
   paymentAccount.save();
 
@@ -114,19 +155,20 @@ export const handleTradeInterbank = async (req, res) => {
     desAccount: accountNumber,
     desBankName: process.env.BANK_NAME,
   });
-    
+
   try {
-    return res
-      .status(200)
-      .json({message: "success", signature: generateRSASignature(successMessage, partner.ourPrivateKey)});
+    return res.status(200).json({
+      message: "success",
+      signature: await generateSignature(partenerAlgo, successMessage, partner.ourPrivateKey),
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(400)
-      .json({ message: "fail", signature: generateRSASignature(failMessage, partner.ourPrivateKey)});
+    return res.status(400).json({
+      message: "fail",
+      signature: await generateSignature(partenerAlgo, failMessage, partner.ourPrivateKey),
+    });
   }
 };
-
 
 export const handleSearchInterbankAccount = async (req, res) => {
   const accountNumber = req.body.payload.accountNumber || "";
@@ -142,21 +184,19 @@ export const handleSearchInterbankAccount = async (req, res) => {
     ],
   });
 
+  console.log(account);
+
   try {
-    return res
-      .status(200)
-      .json({
-        code: 1,
-        account: {
-          accountNumber,
-          fullName: account ? account.customer.fullName : "",
-        },
-      });
+    return res.status(200).json({
+      code: 1,
+      account: {
+        accountNumber,
+        fullName: account ? account.customer.fullName : "",
+      },
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(200)
-      .json({ code: 0, account: { } });
+    return res.status(200).json({ code: 0, account: {} });
   }
 };
 
@@ -174,10 +214,7 @@ export const searchInterbankAccount = async (req, res) => {
   const partnerDomain = partner.domain;
 
   try {
-    const account = await PGPSearchAccountApi(
-      partnerDomain,
-      accountNumber
-    );
+    const account = await PGPSearchAccountApi(partnerDomain, accountNumber, partner.partenerSecretKey);
     return res.status(200).json(account);
   } catch (error) {
     console.error(error);

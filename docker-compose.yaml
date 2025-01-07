@@ -33,7 +33,7 @@ services:
       MAILJET_API_KEY: 5f453b57b69003f11cdbd0d46c363385
       MAILJET_SECRET_KEY: c398f2a5e8a7990929dc9c28770868b0
       ASYMMETRIC_ENCRYPTION_ALGORITHM: RSA
-      BANK_NAME: "Ngân hàng A"
+      BANK_NAME: "MyBank"
     networks:
       - wnc_final_project
     expose:

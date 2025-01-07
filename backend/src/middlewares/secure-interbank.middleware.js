@@ -1,5 +1,5 @@
 import { models } from "../lib/utils/database/index.js";
-import { generateHash, verifyPGPSignature } from "../lib/utils/cryptoUtils/index.js";
+import { generateHash, verifySignature } from "../lib/utils/cryptoUtils/index.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -20,13 +20,13 @@ export const validRequest = async (req, res, next) => {
 
     console.log("desUrl::",req.originalUrl);
 
-    const verifyToken = generateHash("sha256", req.originalUrl + "" + time + "" + process.env.SECRET_KEY);
+    const verifyToken = generateHash("sha256", req.originalUrl + "" + time + "" + bank.partenerSecretKey, bank.partenerSecretKey);
 
     if (token !== verifyToken) {
       return res.status(200).json({ message: "Data tampering detected" });
     }
 
-    req['partenerPublicKey'] = bank.partenerPublicKey;
+    req['bank'] = bank;
 
     return next();
   } catch (error) {
@@ -37,9 +37,10 @@ export const validRequest = async (req, res, next) => {
 export const validSignature = async (req, res, next) => {
     const {payload, signature} = req.body;
 
-    const partenerPublicKey = req["partenerPublicKey"];
+    const partenerPublicKey = req["bank"]["partenerPublicKey"];
+    const partenerAlgo = req["bank"]["partenerAlgo"];
 
-    const isValidSignature = await verifyPGPSignature(JSON.stringify(payload), signature, partenerPublicKey);
+    const isValidSignature = await verifySignature(partenerAlgo, JSON.stringify(payload), signature, partenerPublicKey);
     
     console.log("isValidSignature", isValidSignature);
 
