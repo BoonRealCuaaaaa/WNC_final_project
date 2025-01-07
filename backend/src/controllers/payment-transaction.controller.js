@@ -331,6 +331,7 @@ export const generateOtpForBankTransfer = async (req, res) => {
     desBankName: paymentTransaction.desBankName,
     fee: paymentTransaction.fee,
     feePayer: paymentTransaction.feePayer,
+    email: customer.email,
   });
 };
 

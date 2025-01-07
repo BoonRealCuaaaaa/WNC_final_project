@@ -11,5 +11,5 @@ export type PaymentTransaction = {
     desAccount: string,
     desBankName: string,
     fee: number,
-    feePayer: FeePayer
+    feePayer: FeePayer,
 }

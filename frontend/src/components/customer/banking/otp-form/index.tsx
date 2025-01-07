@@ -19,27 +19,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMainContent,
-  FormMessage,
-} from "@/components/ui/form";
-import { useMutation } from "@tanstack/react-query";
-import { FeePayer, PaymentTransaction } from "@/types/PaymentTransaction";
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMainContent,
+    FormMessage,
+} from "@/components/ui/form"
+import { useMutation } from "@tanstack/react-query"
+import { FeePayer } from "@/types/PaymentTransaction";
 import { formatCurrency } from "@/lib/string";
 import { payBankTransferApi } from "@/api/customer.api";
 import { useState } from "react";
 import { AxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
-import { getEmail } from "@/utils/auth";
+import useAppStore from "@/store";
 
 interface Props {
-  receiverName: string;
-  onBankingResult?: (boolean) => void;
-  onReturn?: () => void;
-  paymentTransaction: PaymentTransaction;
+    receiverName: string;
+    onBankingResult?: (boolean) => void,
+    onReturn?: () => void,
 }
 
 const formSchema = z.object({
@@ -48,19 +46,16 @@ const formSchema = z.object({
   }),
 });
 
-export default function BankingOtpForm({
-  receiverName,
-  onBankingResult,
-  onReturn,
-  paymentTransaction,
-}: Props) {
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      otp: "",
-    },
-  });
+export default function BankingOtpForm({ receiverName, onBankingResult, onReturn }: Props) {
+    const { paymentTransaction, email } = useAppStore((state) => state);
+
+    // 1. Define your form.
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            otp: "",
+        },
+    })
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -95,117 +90,86 @@ export default function BankingOtpForm({
     },
   });
 
-  return (
-    <Card className="w-[600px]">
-      <CardHeader>
-        <Button variant="ghost" size="icon" onClick={onReturn}>
-          <ArrowLeft />
-        </Button>
-        <CardTitle>Xác nhận chuyển khoản</CardTitle>
-        <CardDescription>
-          Vui lòng xác nhận lại thông tin giao dịch để tránh sai sót
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-3">
-          <div className="static-field">
-            <div className="static-field-label">Người nhận tiền</div>
-            <div className="static-field-value">{receiverName}</div>
-          </div>
-          <div className="static-field">
-            <div className="static-field-label">Số tài khoản</div>
-            <div className="static-field-value">
-              {paymentTransaction.desAccount}
-            </div>
-          </div>
-          <div className="static-field">
-            <div className="static-field-label">Ngân hàng</div>
-            <div className="static-field-value">
-              {paymentTransaction.desBankName}
-            </div>
-          </div>
-        </div>
-        <Separator />
-        <div className="flex flex-col gap-y-5">
-          <div className="flex items-center justify-between">
-            <div className="static-field-label">
-              Số tiền thực tế chuyển cho người nhận
-            </div>
-            <div className="static-field-value font-semibold text-primary">
-              {formatCurrency(paymentTransaction.amount)}
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="static-field-label">Phí giao dịch</div>
-            <div className="static-field-value">
-              {formatCurrency(paymentTransaction.fee)} (
-              {paymentTransaction.feePayer === FeePayer.SENDER
-                ? "Người gửi trả"
-                : "Người nhận trả"}
-              )
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="static-field-label">Tổng tiền bị trừ</div>
-            <div className="static-field-value font-semibold text-destructive">
-              {formatCurrency(
-                paymentTransaction.fee + paymentTransaction.amount
-              )}
-            </div>
-          </div>
-        </div>
-        <Separator />
-        <div className="static-field">
-          <div className="static-field-label">Nội dung chuyển tiền</div>
-          <div className="static-field-value">{paymentTransaction.content}</div>
-        </div>
-        <Separator />
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col w-full items-center gap-y-2.5"
-          >
-            <FormMainContent className="py-0">
-              <FormField
-                control={form.control}
-                name="otp"
-                required
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <InputOTP maxLength={6} {...field}>
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                        </InputOTPGroup>
-                        <InputOTPSeparator />
-                        <InputOTPGroup>
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </FormControl>
-                    <FormMessage className="text-center" />
-                  </FormItem>
-                )}
-              />
-            </FormMainContent>
-            <div className="text-sm/4">
-              Nhập mã xác thực được gửi đến email <b>{getEmail()}</b> của bạn
-            </div>
-            <Button variant="link" className="p-0">
-              Gửi lại mã xác thực
-            </Button>
-            <CardFooter className="w-full">
-              <LoadingButton className="w-full" isLoading={isSubmitting}>
-                Xác nhận
-              </LoadingButton>
-            </CardFooter>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
-  );
+    return (
+        <Card className="w-[600px]">
+            <CardHeader>
+                <Button variant="ghost" size="icon" onClick={onReturn}><ArrowLeft /></Button>
+                <CardTitle>Xác nhận chuyển khoản</CardTitle>
+                <CardDescription>Vui lòng xác nhận lại thông tin giao dịch để tránh sai sót</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-3">
+                    <div className="static-field">
+                        <div className="static-field-label">Người nhận tiền</div>
+                        <div className="static-field-value">{receiverName}</div>
+                    </div>
+                    <div className="static-field">
+                        <div className="static-field-label">Số tài khoản</div>
+                        <div className="static-field-value">{paymentTransaction.desAccount}</div>
+                    </div>
+                    <div className="static-field">
+                        <div className="static-field-label">Ngân hàng</div>
+                        <div className="static-field-value">{paymentTransaction.desBankName}</div>
+                    </div>
+                </div>
+                <Separator />
+                <div className="flex flex-col gap-y-5">
+                    <div className="flex items-center justify-between">
+                        <div className="static-field-label">Số tiền thực tế chuyển cho người nhận</div>
+                        <div className="static-field-value font-semibold text-primary">{formatCurrency(paymentTransaction.amount)}</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="static-field-label">Phí giao dịch</div>
+                        <div className="static-field-value">{formatCurrency(paymentTransaction.fee)} ({paymentTransaction.feePayer === FeePayer.SENDER ? "Người gửi trả" : "Người nhận trả"})</div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="static-field-label">Tổng tiền bị trừ</div>
+                        <div className="static-field-value font-semibold text-destructive">{formatCurrency(paymentTransaction.fee + paymentTransaction.amount)}</div>
+                    </div>
+                </div>
+                <Separator />
+                <div className="static-field">
+                    <div className="static-field-label">Nội dung chuyển tiền</div>
+                    <div className="static-field-value">{paymentTransaction.content}</div>
+                </div>
+                <Separator />
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col w-full items-center gap-y-2.5">
+                        <FormMainContent className="py-0">
+                            <FormField
+                                control={form.control}
+                                name="otp"
+                                required
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <InputOTP maxLength={6} {...field}>
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={0} />
+                                                    <InputOTPSlot index={1} />
+                                                    <InputOTPSlot index={2} />
+                                                </InputOTPGroup>
+                                                <InputOTPSeparator />
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={3} />
+                                                    <InputOTPSlot index={4} />
+                                                    <InputOTPSlot index={5} />
+                                                </InputOTPGroup>
+                                            </InputOTP>
+                                        </FormControl>
+                                        <FormMessage className="text-center"/>
+                                    </FormItem>
+                                )}
+                            />
+                        </FormMainContent>
+                        <div className="text-sm/4">Nhập mã xác thực được gửi đến email <b>{email}</b> của bạn</div>
+                        <Button variant="link" className="p-0">Gửi lại mã xác thực</Button>
+                        <CardFooter className="w-full">
+                            <LoadingButton className="w-full" isLoading={isSubmitting}>Xác nhận</LoadingButton>
+                        </CardFooter>
+                    </form>
+                </Form>
+            </CardContent>
+        </Card>
+    )
 }
