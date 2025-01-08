@@ -83,8 +83,6 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: "Lỗi hệ thống"
- *     security:
- *       - jwt: []
  *     tags:
  *       - Notification
  */
@@ -157,8 +155,6 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: "Lỗi hệ thống"
- *     security:
- *       - jwt: []
  *     tags:
  *       - Notification
  */

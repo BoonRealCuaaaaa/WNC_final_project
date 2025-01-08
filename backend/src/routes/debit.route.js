@@ -83,16 +83,8 @@ const router = express.Router();
  *                   type: string
  *                   example: "Unauthorized"
  *                   description: Thông báo khi xác thực JWT không hợp lệ.
- *     security:
- *       - jwt: []
  *     tags:
  *       - Debit Management
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.post("/", validateMiddleware(createDebitSchema), createDebit);
 /**
@@ -173,16 +165,8 @@ router.post("/", validateMiddleware(createDebitSchema), createDebit);
  *                   type: string
  *                   example: "Server Error"
  *                   description: Thông báo lỗi máy chủ khi truy vấn giao dịch nợ.
- *     security:
- *       - jwt: []
  *     tags:
  *       - Debit Management
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.get("/created", getCreatedDebit);
 /**
@@ -263,16 +247,8 @@ router.get("/created", getCreatedDebit);
  *                   type: string
  *                   example: "Server Error"
  *                   description: Thông báo lỗi máy chủ khi truy vấn giao dịch nợ.
- *     security:
- *       - jwt: []
  *     tags:
  *       - Debit Management
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 
 router.get("/received", getReceivedDebit);
@@ -343,16 +319,8 @@ router.get("/received", getReceivedDebit);
  *                   type: string
  *                   example: "Server Error"
  *                   description: Thông báo lỗi máy chủ trong quá trình hủy giao dịch nợ.
- *     security:
- *       - jwt: []
  *     tags:
  *       - Debit Management
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.post("/cancel", validateMiddleware(cancelDebitSchema), cancelDebit);
 

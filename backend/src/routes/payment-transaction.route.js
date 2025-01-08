@@ -70,12 +70,6 @@ const router = express.Router();
  *       - jwt: []
  *     tags:
  *       - Payment Transaction
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.post("/debit/otp", generateOtpForDebit);
 
@@ -145,16 +139,8 @@ router.post("/debit/otp", generateOtpForDebit);
  *                   type: string
  *                   example: "Server Error"
  *                   description: Thông báo lỗi máy chủ trong quá trình thanh toán nợ.
- *     security:
- *       - jwt: []
  *     tags:
  *       - Payment Transaction
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.post("/debit", validateMiddleware(payDebitSchema), payDebit);
 
@@ -310,16 +296,6 @@ router.get("/history", getTransactionHistory);
  *                   type: string
  *                   example: "Server Error"
  *                   description: Thông báo lỗi máy chủ trong quá trình tạo giao dịch.
- *     security:
- *       - jwt: []
- *     tags:
- *       - Payment Transaction
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.post(
   "/bank-transfer",
@@ -390,16 +366,6 @@ router.post(
  *                 message:
  *                   type: string
  *                   example: "Lỗi hệ thống (2)"
- *     security:
- *       - jwt: []
- *     tags:
- *       - Payment Transaction
- * components:
- *   securitySchemes:
- *     jwt:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  */
 router.post(
   "/bank-transfer/pay",
