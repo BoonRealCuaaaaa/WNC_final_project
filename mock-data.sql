@@ -189,14 +189,26 @@ VALUES
 -- Dữ liệu mẫu cho bảng PaymentTransaction (status dùng tiếng Việt)
 INSERT INTO `paymenttransaction` (`amount`, `content`, `otp`, `otpExpiredAt`, `status`, `srcAccount`, `srcBankName`, `desAccount`, `desBankName`, `fee`, `feePayer`)
 VALUES
-  (1000.00, 'Thanh toán dịch vụ', '123456', '2024-12-12 12:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '9870009876', 'Bank B', 100.00, 'RECEIVER'),
-  (500.00, 'Thanh toán hàng hóa', '654321', '2024-12-12 13:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '1230001234', 'Bank A', 120.00, 'RECEIVER'),
-  (1500.00, 'Thanh toán hóa đơn', '234567', '2024-12-12 14:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '3330003333', 'Bank C', 200.00, 'SENDER'),
-  (2000.00, 'Thanh toán cho đối tác', '345678', '2024-12-12 15:00:00', 'HOÀN THÀNH', '667788990011', 'Bank D', '4440004444', 'Bank D', 130.00, 'RECEIVER'),
-  (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889900112233', 'Bank E', '5550005555', 'Bank E', 120.00, 'RECEIVER'),
-  (3000.00, 'Thanh toán dịch vụ bổ sung', '567890', '2024-12-12 17:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '6660006666', 'Bank F', 100.00, 'SENDER'),
-  (4000.00, 'Thanh toán đầu tư', '678901', '2024-12-12 18:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '7770007777', 'Bank G', 110.00, 'RECEIVER'),
-  (1200.00, 'Thanh toán nội bộ', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '1230001234', 'Bank A', '123456789012', 'Bank A', 220.00, 'SENDER');
+    (1000.00, 'Thanh toán dịch vụ', '123456', '2024-12-12 12:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '987654321098', 'Bank B', 100.00, 'RECEIVER'),
+    (500.00, 'Thanh toán hàng hóa', '654321', '2024-12-12 13:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '123456789012', 'Bank A', 120.00, 'RECEIVER'),
+    (1500.00, 'Thanh toán hóa đơn', '234567', '2024-12-12 14:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '998877665544', 'Bank C', 200.00, 'SENDER'),
+    (2000.00, 'Thanh toán cho đối tác', '345678', '2024-12-12 15:00:00', 'HOÀN THÀNH', '667788990011', 'Bank D', '889900112233', 'Bank D', 130.00, 'RECEIVER'),
+    (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889900112233', 'Bank E', '667788990011', 'Bank E', 120.00, 'RECEIVER'),
+    (3000.00, 'Thanh toán dịch vụ bổ sung', '567890', '2024-12-12 17:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '112233445566', 'Bank F', 100.00, 'SENDER'),
+    (4000.00, 'Thanh toán đầu tư', '678901', '2024-12-12 18:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '998877665544', 'Bank G', 110.00, 'RECEIVER'),
+    (1200.00, 'Thanh toán nội bộ', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '998877665544', 'Bank A', '123456789012', 'Bank A', 220.00, 'SENDER'),
+    (800.00, 'Thanh toán phí dịch vụ', '890123', '2024-12-12 20:00:00', 'ĐANG XỬ LÝ', '667788990011', 'Bank D', '987654321098', 'Bank B', 90.00, 'RECEIVER'),
+    (950.00, 'Thanh toán phí bảo trì', '901234', '2024-12-12 21:00:00', 'HOÀN THÀNH', '889900112233', 'Bank E', '112233445566', 'Bank C', 85.00, 'SENDER'),
+    (1100.00, 'Thanh toán phí vận chuyển', '012345', '2024-12-12 22:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '667788990011', 'Bank D', 95.00, 'RECEIVER'),
+    (1300.00, 'Thanh toán phí bảo hiểm', '123456', '2024-12-12 23:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '889900112233', 'Bank E', 105.00, 'SENDER'),
+    (1400.00, 'Thanh toán phí dịch vụ', '234567', '2024-12-13 00:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '123456789012', 'Bank A', 115.00, 'RECEIVER'),
+    (1600.00, 'Thanh toán phí bảo trì', '345678', '2024-12-13 01:00:00', 'HOÀN THÀNH', '998877665544', 'Bank C', '987654321098', 'Bank B', 125.00, 'SENDER'),
+    (1700.00, 'Thanh toán phí vận chuyển', '456789', '2024-12-13 02:00:00', 'ĐANG XỬ LÝ', '667788990011', 'Bank D', '112233445566', 'Bank C', 135.00, 'RECEIVER'),
+    (1800.00, 'Thanh toán phí bảo hiểm', '567890', '2024-12-13 03:00:00', 'HOÀN THÀNH', '889900112233', 'Bank E', '998877665544', 'Bank C', 145.00, 'SENDER'),
+    (1900.00, 'Thanh toán phí dịch vụ', '678901', '2024-12-13 04:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '987654321098', 'Bank B', 155.00, 'RECEIVER'),
+    (2100.00, 'Thanh toán phí bảo trì', '789012', '2024-12-13 05:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '667788990011', 'Bank D', 165.00, 'SENDER'),
+    (2200.00, 'Thanh toán phí vận chuyển', '890123', '2024-12-13 06:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '889900112233', 'Bank E', 175.00, 'RECEIVER'),
+    (2300.00, 'Thanh toán phí bảo hiểm', '901234', '2024-12-13 07:00:00', 'HOÀN THÀNH', '998877665544', 'Bank C', '123456789012', 'Bank A', 185.00, 'SENDER');
 
 -- Dữ liệu mẫu cho bảng Debits
 INSERT INTO `debits` (`amount`, `content`, `status`, `cancelReason`, `paymentTransactionsId`, `creditor`, `debtor`)
