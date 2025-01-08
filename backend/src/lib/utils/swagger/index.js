@@ -1,13 +1,13 @@
 import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
+import swaggerUi, { serve } from "swagger-ui-express";
 
 export const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Interbank API",
+      title: "Internet Banking API",
       version: "1.0.0",
-      description: "API for interbank transactions",
+      description: "API for Internet Banking",
     },
   },
   apis: ["./src/routes/*.js"],
