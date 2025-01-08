@@ -20,6 +20,7 @@ import {
 } from "./src/middlewares/verify-teller-account.middleware.js";
 import { sendOtpMail } from "./src/services/email.js";
 import { swaggerUi, swaggerSpecs } from "./src/lib/utils/swagger/index.js";
+
 const app = express();
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 app.use(express.json());
@@ -30,8 +31,6 @@ initializeSocket(server);
 
 const port = process.env.PORT || 3000;
 
-app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(specs));
-app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(specs));
 app.use("/auth", authRouter);
 app.use("/interbanks", interbankRouter);
 app.use("/notification", verifyToken, notificationRouter);
@@ -45,6 +44,5 @@ app.use("/partners", verifyToken, partnerRouter);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-  console.log(`Swagger docs is running on localhost:${port}/api-docs`);
   console.log(`Swagger docs is running on localhost:${port}/api-docs`);
 });
