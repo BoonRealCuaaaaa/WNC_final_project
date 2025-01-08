@@ -10,12 +10,12 @@ export const validRequest = async (req, res, next) => {
     const bank = await models.Partners.findOne({ where: { domain } });
 
     if (!bank) {
-      return res.status(403).json({ message: "Unauthorized bank" });
+      return res.status(403).json({ message: "Không tìm thấy ngân hàng" });
     }
     
     const maxPeriod = 5 * 60; // seconds
     if (Math.floor((Date.now() - time) / 1000) > maxPeriod) {
-      return res.status(200).json({ message: "Request expired" });
+      return res.status(400).json({ message: "Thời gian đã quá hạn" });
     }
 
     console.log("desUrl::",req.originalUrl);
@@ -23,14 +23,14 @@ export const validRequest = async (req, res, next) => {
     const verifyToken = generateHash("sha256", req.originalUrl + "" + time + "" + bank.partenerSecretKey, bank.partenerSecretKey);
 
     if (token !== verifyToken) {
-      return res.status(200).json({ message: "Data tampering detected" });
+      return res.status(400).json({ message: "Gói tin đã bị thay đổi" });
     }
 
     req['bank'] = bank;
 
     return next();
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Lỗi server" });
   }
 };
 
