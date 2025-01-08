@@ -9,7 +9,7 @@ import {
   EXTERNAL_TRANSACTION_FEE,
 } from "../constants/transaction-fee.js";
 import "dotenv/config";
-import { PGPPayTransferApi } from "./interbank.controller.js";
+import { PGPPayTransferApi, RSAPayTransferApi } from "./interbank.controller.js";
 
 export const generateOtpForDebit = async (req, res) => {
   const { debitId } = req.body;
@@ -396,18 +396,38 @@ export const payBankTransfer = async (req, res) => {
       return res.status(500).json({ message: "Lỗi hệ thống (2)" });
     }
 
-    const success = await PGPPayTransferApi(
-      req.headers.host,
-      partner.domain,
-      transaction.desAccount,
-      amount,
-      transaction.srcAccount,
-      transaction.content,
-      partner.ourPrivateKey,
-      partner.partenerPublicKey,
-      partner.partenerAlgo,
-    );
-
+    let success = false; 
+    if (partner.partenerAlgo.toUpperCase() === 'RSA') {
+      success = await RSAPayTransferApi(
+            req.headers.host,
+            partner.domain,
+            transaction.desAccount,
+            amount,
+            transaction.srcAccount,
+            transaction.content,
+            partner.ourPrivateKey,
+            partner.partenerPublicKey,
+            partner.partenerAlgo,
+            partner.partenerSecretKey,
+          );
+      
+        } else {
+          success = await PGPPayTransferApi(
+            req.headers.host,
+            partner.domain,
+            transaction.desAccount,
+            amount,
+            transaction.srcAccount,
+            transaction.content,
+            partner.ourPrivateKey,
+            partner.partenerPublicKey,
+            partner.partenerAlgo,
+            partner.partenerSecretKey,
+          );
+      
+        }
+    
+    
     if (success) {
       senderBalance -= amount + fee;
       sender.balance = senderBalance;
