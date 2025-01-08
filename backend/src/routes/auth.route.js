@@ -1,3 +1,32 @@
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Đăng nhập
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: john_doe
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Đăng nhập thành công
+ *       404:
+ *         description: User không tồn tại
+ *       402:
+ *         description: Mật khẩu không chính xác hoặc User đang bị khóa
+ */
+
 import express from "express";
 import { models } from "../lib/utils/database/index.js";
 import validateMiddleware from "../middlewares/ajv-validate.middleware.js";

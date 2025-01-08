@@ -18,9 +18,10 @@ import {
   verifyTellerAccount,
   verifyAdminAccount,
 } from "./src/middlewares/verify-teller-account.middleware.js";
-import { sendOtpMail } from "./src/services/email.js";
+import { swaggerUi, swaggerSpecs } from "./src/lib/utils/swagger/index.js";
 
 const app = express();
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 app.use(express.json());
 app.use(cors());
 
