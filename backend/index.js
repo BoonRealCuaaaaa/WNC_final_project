@@ -44,5 +44,5 @@ app.use("/partners", verifyToken, partnerRouter);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-  console.log(`Swagger docs is running on localhost:${port}/api-docs`);
+  console.log(`Swagger docs is running on http://localhost:${port}/api-docs`);
 });
