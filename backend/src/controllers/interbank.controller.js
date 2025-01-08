@@ -88,7 +88,7 @@ export const handleTradeInterbank = async (req, res) => {
 
   if (!partner) {
     res
-    .status(400)
+    .status(403)
     .json({ message: "fail",signature: generateRSASignature(failMessage, partner.ourPrivateKey)});
   }
   
@@ -122,7 +122,7 @@ export const handleTradeInterbank = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res
-      .status(400)
+      .status(500)
       .json({ message: "fail", signature: generateRSASignature(failMessage, partner.ourPrivateKey)});
   }
 };
@@ -155,7 +155,7 @@ export const handleSearchInterbankAccount = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res
-      .status(200)
+      .status(500)
       .json({ code: 0, account: { } });
   }
 };

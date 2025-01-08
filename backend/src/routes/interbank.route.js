@@ -17,10 +17,9 @@ import { verifyToken } from "../middlewares/authenticate.middleware.js";
 
 import express from "express";
 const router = express.Router();
-
 /**
  * @swagger
- * /trade/interbank:
+ * /interbanks/handle-trade-interbank:
  *   post:
  *     summary: Xử lý giao dịch liên ngân hàng
  *     description: API xử lý giao dịch chuyển tiền liên ngân hàng từ tài khoản nguồn tới tài khoản đích.
@@ -34,6 +33,18 @@ const router = express.Router();
  *               domain:
  *                 type: string
  *                 description: Tên miền của đối tác.
+ *               time:
+ *                 type: number
+ *                 example: 1736311549783
+ *                 description: Thời gian gửi gói tin.
+ *               token:
+ *                 type: string
+ *                 example: token
+ *                 description: Token để kiểm tra gói tin có bị chỉnh sửa không. Hash theo thuật toán sha256 chuỗi "/interbanks/handle-trade-interbank" + time + secretKey.
+ *               signature:
+ *                 type: string
+ *                 example: signature
+ *                 description: Chữ ký của đối tác tạo dựa vào JSON.stringify({amount, accountNumber, srcAccount, content}).
  *               payload:
  *                 type: object
  *                 properties:
@@ -43,6 +54,7 @@ const router = express.Router();
  *                     type: string
  *                   amount:
  *                     type: number
+ *                     example: 50000
  *                   content:
  *                     type: string
  *     responses:
@@ -56,8 +68,10 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: success
+ *                   description: success or fail
  *                 signature:
  *                   type: string
+ *                   description: Chữ ký của công ty tạo dựa vào JSON.stringify({message}).
  *       400:
  *         description: Giao dịch thất bại
  *         content:
@@ -76,13 +90,58 @@ const router = express.Router();
  *                   properties:
  *                     message:
  *                       type: string
+ *                       example: Thời gian đã quá hạn
+ *                   description: Thời gian đã quá hạn
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Gói tin đã bị thay đổi
+ *                   description: Gói tin đã bị thay đổi
+ *       401:
+ *         description: Chữ kí không hợp lệ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Chữ kí không hợp lệ 
+ *       403:
+ *         description: Không tìm thấy ngân hàng tương ứng với domain
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Không tìm thấy ngân hàng
+ *       500:
+ *         description: Lỗi server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
  *                       example: fail
  *                     signature:
  *                       type: string
- *                   description: Đối tác không tồn tại
+ *                   description: Gói tin hợp lệ tuy nhiên gặp lỗi server
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Lỗi server
+ *                   description: Gặp lỗi server khi kiểm tra gói tin có hợp lệ hay không
  *     tags:
  *       - Interbank Transaction
  */
+
 router.post(
   "/handle-trade-interbank",
   validateMiddleware(handleTradeInterbankSchema),
@@ -93,7 +152,7 @@ router.post(
 
 /**
  * @swagger
- * /handle-search-interbank-account:
+ * /interbanks/handle-search-interbank-account:
  *   post:
  *     summary: Tìm kiếm thông tin tài khoản của ngân hàng bản thân
  *     description: API tìm kiếm thông tin tài khoản ngân hàng bằng số tài khoản và trả về tên chủ tài khoản nếu có.
@@ -104,88 +163,27 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
+ *               domain:
+ *                 type: string
+ *                 description: Tên miền của đối tác.
+ *               time:
+ *                 type: number
+ *                 example: 1736311549783
+ *                 description: Thời gian gửi gói tin.
+ *               token:
+ *                 type: string
+ *                 example: token
+ *                 description: Token để kiểm tra gói tin có bị chỉnh sửa không. Hash theo thuật toán sha256 chuỗi "/interbanks/handle-search-interbank-account" + time + secretKey.
  *               payload:
  *                 type: object
  *                 properties:
  *                   accountNumber:
  *                     type: string
  *                     description: Số tài khoản ngân hàng cần tìm kiếm.
- *                     example: "123456789"
+ *                     example: "987654321098"
  *     responses:
  *       200:
  *         description: Trả về thông tin tài khoản hoặc thông báo lỗi nếu không tìm thấy.
- *         content:
- *           application/json:
- *             schema:
- *               oneOf:
- *                 - type: object
- *                   properties:
- *                     code:
- *                       type: integer
- *                       example: 1
- *                     account:
- *                       type: object
- *                       properties:
- *                         accountNumber:
- *                           type: string
- *                           example: "123456789"
- *                         fullName:
- *                           type: string
- *                           example: "Nguyễn Văn A"
- *                     message:
- *                       type: string
- *                       example: "Tìm thấy tài khoản"  # Thông báo thành công
- *                 - type: object
- *                   properties:
- *                     code:
- *                       type: integer
- *                       example: 0
- *                     account:
- *                       type: object
- *                       properties:
- *                         accountNumber:
- *                           type: string
- *                           example: ""
- *                         fullName:
- *                           type: string
- *                           example: ""
- *                     message:
- *                       type: string
- *                       example: "Lỗi hệ thống hoặc không tìm thấy tài khoản"
- *     tags:
- *       - Interbank Account Search
- */
-router.post(
-  "/handle-search-interbank-account",
-  validateMiddleware(handleSearchInterbankAccountSchema),
-  validRequest,
-  handleSearchInterbankAccount
-);
-
-/**
- * @swagger
- * /search-interbank-account:
- *   post:
- *     summary: Tìm kiếm tài khoản của ngân hàng đối tác
- *     description: API tìm kiếm thông tin tài khoản ngân hàng dựa trên tên ngân hàng và số tài khoản.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               bankName:
- *                 type: string
- *                 description: Tên ngân hàng cần kiểm tra.
- *                 example: "Techcombank"
- *               accountNumber:
- *                 type: string
- *                 description: Số tài khoản cần tìm kiếm.
- *                 example: "123456789"
- *     responses:
- *       200:
- *         description: Thành công - Trả về thông tin tài khoản hoặc thông tin mặc định nếu có lỗi.
  *         content:
  *           application/json:
  *             schema:
@@ -203,14 +201,36 @@ router.post(
  *                     fullName:
  *                       type: string
  *                       example: "Nguyễn Văn A"
- *                     status:
+ *       400:
+ *         description: Giao dịch thất bại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     message:
  *                       type: string
- *                       example: "Active"
+ *                       example: Thời gian đã quá hạn
+ *                   description: Thời gian đã quá hạn
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Gói tin đã bị thay đổi
+ *                   description: Gói tin đã bị thay đổi
+ *       403:
+ *         description: Không tìm thấy ngân hàng tương ứng với domain
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
  *                 message:
  *                   type: string
- *                   example: "Tìm thấy tài khoản"
- *       400:
- *         description: Thất bại khi không tìm thấy partner hoặc lỗi trong quá trình tìm kiếm tài khoản.
+ *                   example: Không tìm thấy ngân hàng
+ *       500:
+ *         description: Lỗi server
  *         content:
  *           application/json:
  *             schema:
@@ -220,38 +240,25 @@ router.post(
  *                     code:
  *                       type: integer
  *                       example: 0
- *                     message:
- *                       type: string
- *                       example: "Bad request: BankName is not existed"
  *                     account:
  *                       type: object
  *                       properties:
- *                         accountNumber:
- *                           type: string
- *                           example: ""
- *                         fullName:
- *                           type: string
- *                           example: ""
+ *                   description: Gói tin hợp lệ tuy nhiên gặp lỗi server
  *                 - type: object
  *                   properties:
- *                     code:
- *                       type: integer
- *                       example: 0
  *                     message:
  *                       type: string
- *                       example: "Lỗi hệ thống hoặc không tìm thấy tài khoản"
- *                     account:
- *                       type: object
- *                       properties:
- *                         accountNumber:
- *                           type: string
- *                           example: ""
- *                         fullName:
- *                           type: string
- *                           example: ""
+ *                       example: Lỗi server
+ *                   description: Gặp lỗi server khi kiểm tra gói tin có hợp lệ hay không
  *     tags:
  *       - Interbank Account Search
  */
+router.post(
+  "/handle-search-interbank-account",
+  validateMiddleware(handleSearchInterbankAccountSchema),
+  validRequest,
+  handleSearchInterbankAccount
+);
 
 router.post(
   "/search-interbank-account",
