@@ -55,7 +55,11 @@ export default function ChooseBenificiaryList({onBeneficiarySelect}: Props) {
                 <Button variant="outline-primary"><BookUser/></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                {beneficiaries.map(beneficiary => <ChooseBenificiaryListItem key={beneficiary.id} beneficiary={beneficiary} onSelect={onBeneficiarySelect}/>)}
+                {(beneficiaries.length > 0) ? (
+                    beneficiaries.map(beneficiary => <ChooseBenificiaryListItem key={beneficiary.id} beneficiary={beneficiary} onSelect={onBeneficiarySelect}/>)
+                ) : (
+                    <p>Danh sách trống</p>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     )

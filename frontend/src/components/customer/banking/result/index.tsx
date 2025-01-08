@@ -2,23 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "react-bootstrap-icons";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
-import { createBeneficiaryApi } from "@/api/beneficiaries.api";
-import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
+import useAppStore from "@/store";
 
 
-const BankingResult = ({
-  receiverName,
-  amount,
-  desBankName,
-  desAccount
-}: {
-  receiverName: string;
-  amount: number;
-  desBankName: string;
-  desAccount: string;
-}) => {
+export default function BankingResult() {
   const [isSaved, setIsSaved] = useState(true);
   const navigate = useNavigate();
 
@@ -26,32 +13,11 @@ const BankingResult = ({
     setIsSaved(!isSaved);
   };
 
-  const { mutate: mutateCreateBeneficiary } = useMutation({
-    mutationFn: createBeneficiaryApi,
-    onSuccess: (response) => {
-      if (response.status === 201) {
-        toast({
-          variant: "default",
-          title: "Thêm người thụ hưởng thành công",
-        });
-      }
-    },
-    onError: (error: AxiosError) => {
-
-      const message = (error.response?.data as { message: string }).message;
-
-      toast({
-        variant: "destructive",
-        title: "Thêm người thụ hưởng thất bại",
-        description: message,
-      });
-    },
-  });
+  const { paymentTransaction, resetPaymentTransaction, saveForNextBanking} = useAppStore((state) => state);
 
   const handleButtonClick = () => {
-    if (isSaved) {
-      mutateCreateBeneficiary({ bankName: desBankName, accountNumber: desAccount, remindName: receiverName });
-    }
+    if (isSaved) saveForNextBanking();
+    else resetPaymentTransaction();
     
     navigate("/account-management");
   };
@@ -74,7 +40,7 @@ const BankingResult = ({
         CHUYỂN TIỀN THÀNH CÔNG
       </h2>
       <p className="text-gray-600 mb-6">
-        {receiverName} đã nhận được {amount}đ từ bạn
+        {paymentTransaction.desOwner} đã nhận được {paymentTransaction.amount}đ từ bạn
       </p>
       {/* Checkbox */}
       <div className="flex items-center justify-center mb-6">
@@ -101,5 +67,3 @@ const BankingResult = ({
     </div>
   );
 };
-
-export default BankingResult;

@@ -31,6 +31,12 @@ export const createBeneficiary = async (req, res) => {
       .json({ message: `${accountNumber} in ${bankName} bank is existed` });
   }
 
+  const paymentAccount = await models.Paymentaccount.findOne({where: {customerId: customer.id}});
+
+  if (paymentAccount.accountNumber === accountNumber) {
+    return res.status(400).json({ message: "Không thể thêm bản thân" });
+  } 
+
   let receiver;
 
   if (bankName === process.env.BANK_NAME) {

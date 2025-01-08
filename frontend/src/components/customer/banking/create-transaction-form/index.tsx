@@ -241,6 +241,10 @@ export default function CreateTransactionForm({ receiver, setReceiver, onCreateS
     const onBeneficiarySelect = (beneficiary: Beneficiary) => {
         form.setValue("bankName", beneficiary.bank);
         form.setValue("accountNumber", beneficiary.accountNumber);
+
+        if (form.getValues("bankName") === import.meta.env.VITE_BANK_NAME) changeMethod(MethodEnum.LOCAL);
+        else changeMethod(MethodEnum.INTERBANK);
+        
         mutateReceiverAllSources();
     }
 
