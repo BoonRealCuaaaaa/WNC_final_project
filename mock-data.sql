@@ -147,7 +147,7 @@ VALUES
 -- Dữ liệu mẫu cho bảng Teller
 INSERT INTO `teller` (`fullName`, `email`, `phone`, `userId`)
 VALUES
-  ('John Doe', 'jane.smith@example.com', '052-521-6319', 2),
+  ('Jane Smith', 'jane.smith@example.com', '052-521-6319', 2),
   ('Rose', 'rose@example.com', '097-245-2119', 13);
 
 
