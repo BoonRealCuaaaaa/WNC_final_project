@@ -44,4 +44,5 @@ app.use("/partners", verifyToken, partnerRouter);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`API Doc is running on http://localhost:${port}/api-docs`)
 });
