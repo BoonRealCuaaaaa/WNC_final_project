@@ -2,13 +2,14 @@ import { models } from "../lib/utils/database/index.js";
 import axios from "axios";
 import {
   generateHash,
-  generateRSASignature,
-  verifyPGPSignature,
+  generateSignature,
+  verifySignature,
 } from "../lib/utils/cryptoUtils/index.js";
-import "dotenv/config";
+import * as dotenv from "dotenv";
 import Decimal from "decimal.js";
+dotenv.config();
 
-export const PGPSearchAccountApi = async (domain, accountNumber) => {
+export const RSASearchAccountApi = async (domain, accountNumber, secretKey) => {
   try {
     const desUrl = `/interbanks/handle-search-interbank-account`;
     const time = Date.now();
@@ -21,7 +22,8 @@ export const PGPSearchAccountApi = async (domain, accountNumber) => {
         domain: domain,
         token: generateHash(
           "sha256",
-          desUrl + "" + time + "" + process.env.SECRET_KEY
+          desUrl + "" + time + "" + secretKey,
+          secretKey
         ),
       })
     ).data;
@@ -32,7 +34,88 @@ export const PGPSearchAccountApi = async (domain, accountNumber) => {
   }
 };
 
+export const PGPSearchAccountApi = async (domain, accountNumber, secretKey) => {
+  try {
+    const desUrl = `/api/transfer/external/account-info`;
+    const time = Date.now();
+    const bankCode = process.env.BANK_NAME || "MyBank";
+    const data = (
+      await axios.post("http://" + domain + desUrl, {
+        bank_code: bankCode,
+        account_number: accountNumber,
+        timestamp: time,
+        hash: generateHash(
+          "sha256",
+          JSON.stringify({
+            bank_code: bankCode,
+            account_number: accountNumber,
+            timestamp: time,
+          }),
+          secretKey
+        ),
+      })
+    ).data;
+    return { accountNumber: data.account_number, fullName: data.id };
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const PGPPayTransferApi = async (
+  partnerDomain,
+  accountNumber,
+  amount,
+  privateKey,
+  partnerPublicKey,
+  partnerAlgo,
+  partnerSecretKey
+) => {
+  try {
+    const desUrl = `/api/transfer/external/deposit`;
+    const time = Date.now();
+    const bankCode = process.env.BANK_NAME || "MyBank";
+    const payload = {
+      bank_code: bankCode,
+      account_number: accountNumber,
+      amount,
+      timestamp: time,
+    };
+
+    const data = (
+      await axios.post("http://" + partnerDomain + desUrl, {
+        bank_code: bankCode,
+        account_number: accountNumber,
+        amount,
+        timestamp: time,
+        signature: await generateSignature(
+          process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || "RSA",
+          JSON.stringify(payload),
+          privateKey
+        ),
+        hash: generateHash("sha256", JSON.stringify(payload), partnerSecretKey),
+      })
+    ).data;
+
+    const { account_number, new_balance, bank_code, signature } = data;
+
+    const isValidSignature = await verifySignature(
+      partnerAlgo,
+      JSON.stringify({ account_number, new_balance, bank_code }),
+      signature,
+      partnerPublicKey
+    );
+
+    if (isValidSignature) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const RSAPayTransferApi = async (
   ourDomain,
   partnerDomain,
   accountNumber,
@@ -40,7 +123,9 @@ export const PGPPayTransferApi = async (
   srcAccount,
   content,
   privateKey,
-  parnerPublicKey
+  partnerPublicKey,
+  partnerAlgo,
+  partnerSecretKey
 ) => {
   const payload = {
     accountNumber,
@@ -59,18 +144,24 @@ export const PGPPayTransferApi = async (
         domain: ourDomain,
         token: generateHash(
           "sha256",
-          desUrl + "" + time + "" + process.env.SECRET_KEY
+          desUrl + "" + time + "" + partnerSecretKey,
+          partnerSecretKey
         ),
-        signature: generateRSASignature(JSON.stringify(payload), privateKey),
+        signature: await generateSignature(
+          process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || "RSA",
+          JSON.stringify(payload),
+          privateKey
+        ),
       })
     ).data;
 
     const { message, signature } = data;
 
-    const isValidSignature = await verifyPGPSignature(
+    const isValidSignature = await verifySignature(
+      partnerAlgo,
       JSON.stringify({ message }),
       signature,
-      parnerPublicKey
+      partnerPublicKey
     );
 
     if (message === "success" && isValidSignature) {
@@ -91,29 +182,21 @@ export const handleTradeInterbank = async (req, res) => {
   const srcAccount = req.body.payload.srcAccount || "";
   const content = req.body.payload.content || "";
 
-  const domain = req.body.domain;
+  const partner = req["bank"];
+  const partenerAlgo = process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || "RSA";
 
   const failMessage = JSON.stringify({ message: "fail" });
   const successMessage = JSON.stringify({ message: "success" });
 
-  const partner = await models.Partners.findOne({ where: { domain } });
-
   if (amount < 1000) {
-    return res
-      .status(400)
-      .json({
-        message: "fail",
-        signature: generateRSASignature(failMessage, partner.ourPrivateKey),
-      });
-  }
-
-  if (!partner) {
-    res
-      .status(403)
-      .json({
-        message: "fail",
-        signature: generateRSASignature(failMessage, partner.ourPrivateKey),
-      });
+    return res.status(400).json({
+      message: "fail",
+      signature: await generateSignature(
+        partenerAlgo,
+        failMessage,
+        partner.ourPrivateKey
+      ),
+    });
   }
 
   const paymentAccount = await models.Paymentaccount.findOne({
@@ -138,20 +221,24 @@ export const handleTradeInterbank = async (req, res) => {
   });
 
   try {
-    return res
-      .status(200)
-      .json({
-        message: "success",
-        signature: generateRSASignature(successMessage, partner.ourPrivateKey),
-      });
+    return res.status(200).json({
+      message: "success",
+      signature: await generateSignature(
+        partenerAlgo,
+        successMessage,
+        partner.ourPrivateKey
+      ),
+    });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        message: "fail",
-        signature: generateRSASignature(failMessage, partner.ourPrivateKey),
-      });
+    return res.status(400).json({
+      message: "fail",
+      signature: await generateSignature(
+        partenerAlgo,
+        failMessage,
+        partner.ourPrivateKey
+      ),
+    });
   }
 };
 
@@ -169,6 +256,8 @@ export const handleSearchInterbankAccount = async (req, res) => {
     ],
   });
 
+  console.log(account);
+
   try {
     return res.status(200).json({
       code: 1,
@@ -179,7 +268,7 @@ export const handleSearchInterbankAccount = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ code: 0, account: {} });
+    return res.status(200).json({ code: 0, account: {} });
   }
 };
 
@@ -197,7 +286,20 @@ export const searchInterbankAccount = async (req, res) => {
   const partnerDomain = partner.domain;
 
   try {
-    const account = await PGPSearchAccountApi(partnerDomain, accountNumber);
+    let account = null;
+    if (partner.partenerAlgo.toUpperCase() === "RSA") {
+      account = await RSASearchAccountApi(
+        partnerDomain,
+        accountNumber,
+        partner.partenerSecretKey
+      );
+    } else {
+      account = await PGPSearchAccountApi(
+        partnerDomain,
+        accountNumber,
+        partner.partenerSecretKey
+      );
+    }
     return res.status(200).json(account);
   } catch (error) {
     console.error(error);
