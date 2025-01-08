@@ -31,6 +31,7 @@ initializeSocket(server);
 const port = process.env.PORT || 3000;
 
 app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(specs));
+app.use("/api-docs", SwaggerUi.serve, SwaggerUi.setup(specs));
 app.use("/auth", authRouter);
 app.use("/interbanks", interbankRouter);
 app.use("/notification", verifyToken, notificationRouter);
@@ -44,5 +45,6 @@ app.use("/partners", verifyToken, partnerRouter);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Swagger docs is running on localhost:${port}/api-docs`);
   console.log(`Swagger docs is running on localhost:${port}/api-docs`);
 });
