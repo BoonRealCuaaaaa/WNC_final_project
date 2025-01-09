@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import useAppStore from "@/store";
 import { toast } from "@/hooks/use-toast";
 import { createBeneficiaryApi } from "@/api/beneficiaries.api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-
 
 export default function BankingResult() {
   const [isSaved, setIsSaved] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleCheckboxChange = () => {
     setIsSaved(!isSaved);
@@ -37,16 +37,31 @@ export default function BankingResult() {
     },
   });
 
-  const { paymentTransaction, resetPaymentTransaction, saveForNextBanking} = useAppStore((state) => state);
+  const { paymentTransaction, resetPaymentTransaction, saveForNextBanking } =
+    useAppStore((state) => state);
 
   const handleButtonClick = () => {
     if (isSaved) {
-      mutateCreateBeneficiary({ bankName: paymentTransaction.desBankName, accountNumber: paymentTransaction.desAccount, remindName: paymentTransaction.desOwner });
+      mutateCreateBeneficiary(
+        {
+          bankName: paymentTransaction.desBankName,
+          accountNumber: paymentTransaction.desAccount,
+          remindName: paymentTransaction.desOwner,
+        },
+        {
+          onSuccess: () => {
+            saveForNextBanking();
+            queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
+            queryClient.refetchQueries({ queryKey: ["beneficiaries"] });
+            navigate("/account-management");
+          },
+        }
+      );
       saveForNextBanking();
+    } else {
+      resetPaymentTransaction();
+      navigate("/account-management");
     }
-    else resetPaymentTransaction();
-    
-    navigate("/account-management");
   };
 
   return (
@@ -67,7 +82,8 @@ export default function BankingResult() {
         CHUYỂN TIỀN THÀNH CÔNG
       </h2>
       <p className="text-gray-600 mb-6">
-        {paymentTransaction.desOwner} đã nhận được {paymentTransaction.amount}đ từ bạn
+        {paymentTransaction.desOwner} đã nhận được {paymentTransaction.amount}đ
+        từ bạn
       </p>
       {/* Checkbox */}
       <div className="flex items-center justify-center mb-6">
@@ -93,4 +109,4 @@ export default function BankingResult() {
       </Button>
     </div>
   );
-};
+}
