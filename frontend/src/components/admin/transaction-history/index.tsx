@@ -76,13 +76,22 @@ export const columns: ColumnDef<Transaction>[] = [
           <AvatarImage src={avatarImage} />
         </Avatar>
         <div className="flex flex-col gap-y-1">
-          <div className="font-semibold">Nguyen Van A</div>
-          <div>
+          {row.original.srcBankName === import.meta.env.VITE_BANK_NAME ? (
+            <div>
             {row.original.desAccount}{" "}
             <span className="border px-2 rounded ml-3 font-semibold">
               {row.original.desBankName}
             </span>
           </div>
+          ) : (
+          <div>
+            {row.original.srcAccount}{" "}
+            <span className="border px-2 rounded ml-3 font-semibold border-blue-500 text-blue-500">
+              {row.original.srcBankName}
+            </span>
+          </div>
+          )}
+          
         </div>
       </div>
     ),
@@ -126,7 +135,7 @@ export const columns: ColumnDef<Transaction>[] = [
 ];
 export default function TransactionHistory() {
   const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2024, 0, 20),
+    from: new Date(2025, 0, 1),
     to: new Date(),
   });
 

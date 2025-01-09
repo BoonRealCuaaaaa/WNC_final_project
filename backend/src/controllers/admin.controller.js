@@ -129,16 +129,32 @@ export const getTransactions = async (req, res) => {
   const { from, to, bankName } = req.query;
 
   const whereClause = { createdAt: {} };
-  if (from) whereClause["createdAt"][Op.gte] = new Date(from);
-  if (to)
-    whereClause["createdAt"][Op.lte] = new Date(
-      new Date(to).setHours(23, 59, 59, 999)
-    );
-  if (bankName && bankName !== "") whereClause["desBankName"] = bankName;
+
+  if (from) {
+    const parsedFrom = new Date(from);
+    if (!isNaN(parsedFrom)) {
+      whereClause["createdAt"][Op.gte] = parsedFrom;
+    }
+  }
+
+  if (to) {
+    const parsedTo = new Date(to);
+    if (!isNaN(parsedTo)) {
+      // Ensure the `to` date is valid and set it to the end of the day in UTC
+      const endOfDay = new Date(parsedTo);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+      whereClause["createdAt"][Op.lte] = endOfDay;
+    }
+  }
+
+  if (bankName && bankName !== "") {
+    whereClause[Op.or] = [{ srcBankName: bankName }, { desBankName: bankName }];
+  }
 
   try {
     const transactions = await models.Paymenttransaction.findAll({
       where: whereClause,
+      order: [["createdAt", "ASC"]],
     });
 
     res.status(200).json(transactions);
@@ -147,12 +163,15 @@ export const getTransactions = async (req, res) => {
   }
 };
 
+
 export const addPartner = async (req, res) => {
-  const { bankName, domain, partnerPublicKey, ourPrivateKey, ourPublicKey } =
+  const { bankName, domain, partnerPublicKey, partnerAlgo, partnerSecretKey, ourPrivateKey, ourPublicKey } =
     req.body;
   const partner = await models.Partners.create({
     bankName: bankName,
     domain: domain,
+    partnerAlgo: partnerAlgo,
+    partnerSecretKey: partnerSecretKey,
     partenerPublicKey: partnerPublicKey,
     ourPrivateKey: ourPrivateKey,
     ourPublicKey: ourPublicKey,
