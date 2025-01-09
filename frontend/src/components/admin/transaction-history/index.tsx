@@ -16,8 +16,20 @@ import { useState } from "react";
 import PaginationSection from "../pagination";
 import { Transaction } from "@/types/transaction";
 import { getAllTransactionsApi } from "@/api/admin.api";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import DateRangePicker from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
+// import { addDays } from "date-fns";
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getPartners } from "@/api/partner.api";
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -33,11 +45,19 @@ export const columns: ColumnDef<Transaction>[] = [
   {
     id: "type",
     header: "type",
-    cell: ({row}) => {
+    cell: ({ row }) => {
       if (row.original.srcBankName === import.meta.env.VITE_BANK_NAME) {
-        return <div className="rounded-md flex justify-center items-center gap-x-4 border border-red-500 text-red-500">Chuyển khoản</div>;
+        return (
+          <div className="rounded-md flex justify-center items-center gap-x-4 border border-red-500 text-red-500">
+            Chuyển khoản
+          </div>
+        );
       }
-      return <div className="rounded-md flex justify-center items-center gap-x-4 border border-purple-500 text-purple-500">Nhận tiền</div>;
+      return (
+        <div className="rounded-md flex justify-center items-center gap-x-4 border border-purple-500 text-purple-500">
+          Nhận tiền
+        </div>
+      );
     },
   },
   {
@@ -83,21 +103,35 @@ export const columns: ColumnDef<Transaction>[] = [
     header: "createdAt",
     cell: ({ row }) => {
       const formatDate = (date) => {
-        return date.toLocaleString("en-GB", {
-          hour12: true, // Ensures AM/PM format
-          hour: "2-digit",
-          minute: "2-digit",
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).replace(',', '');
+        return date
+          .toLocaleString("en-US", {
+            hour12: true, // Ensures AM/PM format
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            timeZone: "UTC",
+          })
+          .replace(",", "");
       };
 
-      return <div className="font-medium">{formatDate(new Date(row.getValue("createdAt")))}</div>;
+      return (
+        <div className="font-medium">
+          {formatDate(new Date(row.getValue("createdAt")))}
+        </div>
+      );
     },
   },
 ];
 export default function TransactionHistory() {
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(2024, 0, 20),
+    to: new Date(),
+  });
+
+  const [bankName, setBankName] = useState("");
+
   const [pagination, setPagination] = useState({
     pageIndex: 0, //initial page index
     pageSize: 5, //default page size
@@ -106,8 +140,24 @@ export default function TransactionHistory() {
   const [rowSelection, setRowSelection] = useState({});
 
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ["transactions"],
-    queryFn: getAllTransactionsApi,
+    queryKey: ["transactions", { from: date?.from, to: date?.to, bankName }],
+    queryFn: async () => {
+      const transactions = await getAllTransactionsApi({
+        from: date.from,
+        to: date.to,
+        bankName: bankName === 'all' ? "" : bankName 
+      });
+      return transactions;
+    },
+    enabled: !!(date?.from || date?.to || bankName),
+    refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: partners, isLoading: partnersIsLoading } = useQuery({
+    queryKey: ["partners"],
+    queryFn: async () => (await getPartners()).data,
+    refetchOnWindowFocus: false,
   });
 
   const table = useReactTable({
@@ -133,16 +183,22 @@ export default function TransactionHistory() {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || partnersIsLoading) {
     return <h2>Loading...</h2>;
   }
 
   const currentPage =
     table.getPageCount() > 0 ? table.getState().pagination.pageIndex + 1 : 0;
 
-  const totalAmount = transactions?.length === 0 ? 0 : Math.floor(
-    transactions.reduce((a: number, b: Transaction) => a + Number(b.amount), 0)
-  );
+  const totalAmount =
+    !transactions || transactions?.length === 0
+      ? 0
+      : Math.floor(
+          transactions.reduce(
+            (a: number, b: Transaction) => a + Number(b.amount),
+            0
+          )
+        );
 
   return (
     <div className="w-full border-2 p-6 rounded-lg">
@@ -151,7 +207,7 @@ export default function TransactionHistory() {
           <p className="font-semibold">
             Lịch sử giao dịch với các ngân hàng khác
           </p>
-          <p className="text-gray-500">{transactions.length} giao dịch</p>
+          <p className="text-gray-500">{transactions?.length || 0} giao dịch</p>
         </div>
         <div>
           <span className="text-gray-500">Tổng số tiền đã giao dịch:</span>
@@ -160,15 +216,32 @@ export default function TransactionHistory() {
           </span>
         </div>
       </div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Lọc..."
-          value={globalFilter}
-          onChange={(event) =>
-            table.setGlobalFilter(String(event.target.value))
-          }
-          className="w-64 h-9"
-        />
+      <div className="flex items-center justify-between py-4">
+        <div className="flex gap-x-3">
+          <Input
+            placeholder="Lọc..."
+            value={globalFilter}
+            onChange={(event) =>
+              table.setGlobalFilter(String(event.target.value))
+            }
+            className="w-64 h-9"
+          />
+          <Select value={bankName} onValueChange={setBankName}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Chọn ngân hàng" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">Tất cả</SelectItem>
+                {partners.map((partner) => (
+                  <SelectItem key={partner.id} value={partner.bankName}>{partner.bankName}</SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <DateRangePicker date={date} setDate={setDate} />
       </div>
       <div>
         <Table className="border-spacing-y-5 border-separate">

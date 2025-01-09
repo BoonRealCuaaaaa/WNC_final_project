@@ -55,9 +55,11 @@ export const generateOtpForDebit = async (req, res) => {
       otpExpiredAt: new Date(Date.now() + 10 * 60 * 1000),
       status: "Chưa thanh toán",
       srcAccount: debtorPaymentAccount.accountNumber,
-      srcBankName: "OWN_BANK",
+      srcBankName: process.env.BANK_NAME,
       desAccount: creditorPaymentAccount.accountNumber,
-      desBankName: "OWN_BANK",
+      desBankName: process.env.BANK_NAME,
+      fee: INTERNAL_TRANSACTION_FEE,
+      feePayer: "SENDER",
     });
 
     debit.paymentTransactionsId = newPaymentTransaction.id;
@@ -111,14 +113,18 @@ export const payDebit = async (req, res) => {
 
   const debtorBalance = new Decimal(debtorPaymentAccount.balance);
   const creditorBalance = new Decimal(creditorPaymentAccount.balance);
-  const totalAmount = Number(debit.amount) + INTERNAL_TRANSACTION_FEE;
-  const amount = new Decimal(totalAmount);
+  const amount = paymentTransaction.amount;
+  const fee = paymentTransaction.fee;
+  const totalAmount = Number(debit.amount) + Number(fee);
+  console.log(totalAmount);
 
-  if (debtorBalance.lessThan(amount)) {
+  if (debtorBalance.lessThan(new Decimal(totalAmount))) {
     return res.status(400).json({ message: "Not enough balance" });
   }
 
-  debtorPaymentAccount.balance = debtorBalance.minus(amount).toString();
+  debtorPaymentAccount.balance = debtorBalance
+    .minus(new Decimal(totalAmount))
+    .toString();
   creditorPaymentAccount.balance = creditorBalance.plus(amount).toString();
   debit.status = "Đã thanh toán";
   paymentTransaction.status = "Đã thanh toán";
@@ -157,7 +163,6 @@ export const getTransactionHistory = async (req, res) => {
       attributes: ["accountNumber"],
     });
 
-    console.log(paymentAccount);
     if (!paymentAccount)
       return res.status(404).json({ error: "Payment account not found." });
 
