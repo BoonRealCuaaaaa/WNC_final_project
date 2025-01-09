@@ -24,6 +24,7 @@ export const getTellers = async (req, res) => {
     });
     res.status(200).json(tellers);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -61,16 +62,17 @@ export const addTeller = async (req, res) => {
     res.status(200).json(teller);
   } catch (error) {
     await t.rollback();
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };
 
 export const updateTeller = async (req, res) => {
   const { tellerId } = req.params;
+  console.log(tellerId);
   const t = await sequelize.transaction();
 
   const { username, email, phone, fullName } = req.body;
-  console.log(req.body);
   try {
     if (
       fullName.length != null &&
@@ -92,7 +94,7 @@ export const updateTeller = async (req, res) => {
         where: { id: tellerId },
         transaction: t,
       });
-
+      console.log(teller);
       await models.User.update(
         {
           username: username,
@@ -105,7 +107,7 @@ export const updateTeller = async (req, res) => {
     res.status(200).json({ updated: true });
   } catch (error) {
     await t.rollback();
-    res.status(500).json({ error: error.message, updated: false });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -134,11 +136,13 @@ export const getTransactions = async (req, res) => {
 };
 
 export const addPartner = async (req, res) => {
-  const { bankName, domain, partnerPublicKey, ourPrivateKey, ourPublicKey } =
+  const { bankName, domain, partnerPublicKey, partnerAlgo, partnerSecretKey, ourPrivateKey, ourPublicKey } =
     req.body;
   const partner = await models.Partners.create({
     bankName: bankName,
     domain: domain,
+    partnerAlgo: partnerAlgo,
+    partnerSecretKey: partnerSecretKey,
     partenerPublicKey: partnerPublicKey,
     ourPrivateKey: ourPrivateKey,
     ourPublicKey: ourPublicKey,

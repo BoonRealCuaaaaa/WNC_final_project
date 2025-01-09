@@ -9,10 +9,17 @@ import { useToast } from "@/hooks/use-toast";
 import TextArea from "antd/es/input/TextArea";
 import { addPartnerApi } from "@/api/admin.api";
 
+enum PartnerAlgo {
+  RSA = 'RSA',
+  PGP = "PGP"
+}
+
 type FormData = {
   bankName: string;
   domain: string;
   partnerPublicKey: string;
+  partnerAlgo: PartnerAlgo;
+  partnerSecretKey: string;
   ourPrivateKey: string;
   ourPublicKey: string;
 };
@@ -90,7 +97,7 @@ const AddPartnerPage = () => {
                 render={({ field }) => (
                   <Input
                     {...field}
-                    placeholder="Nhập mật khẩu mới"
+                    placeholder="Nhập tên miền"
                     className={`${errors.domain ? "border-red-500" : ""}`}
                   />
                 )}
@@ -122,6 +129,54 @@ const AddPartnerPage = () => {
               {errors.partnerPublicKey && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.partnerPublicKey.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-gray-600 mb-1">
+                Thuật toán của đối tác (RSA | PGP)
+              </label>
+              <Controller
+                name="partnerAlgo"
+                control={control}
+                render={({ field }) => (
+                  <TextArea
+                    {...field}
+                    placeholder="Nhập thuật toán của đối tác (RSA | PGP)"
+                    className={`${
+                      errors.partnerAlgo ? "border-red-500" : ""
+                    }`}
+                  />
+                )}
+              />
+              {errors.partnerAlgo && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.partnerAlgo.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-gray-600 mb-1">
+                Secret key tương ứng với đối tác
+              </label>
+              <Controller
+                name="partnerSecretKey"
+                control={control}
+                render={({ field }) => (
+                  <TextArea
+                    {...field}
+                    placeholder="Nhập khóa bí mật tương ứng với đối tác"
+                    className={`${
+                      errors.partnerSecretKey ? "border-red-500" : ""
+                    }`}
+                  />
+                )}
+              />
+              {errors.partnerSecretKey && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.partnerSecretKey.message}
                 </p>
               )}
             </div>
