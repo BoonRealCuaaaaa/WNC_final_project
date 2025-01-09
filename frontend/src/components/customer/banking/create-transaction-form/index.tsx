@@ -112,7 +112,7 @@ export default function CreateTransactionForm({ receiver, setReceiver, onCreateS
             if (response.status === 200) {
                 setBankNames(
                     response.data
-                        .filter((item) => item.bankName !== "OWN_BANK") // Exclude "OWN_BANK"
+                        .filter((item) => item.bankName !== import.meta.env.VITE_BANK_NAME)
                         .map((item) => item.bankName)
                 );
             }
@@ -226,7 +226,7 @@ export default function CreateTransactionForm({ receiver, setReceiver, onCreateS
         if (method === newMethod) return;
         setMethod(newMethod);
         if (newMethod === MethodEnum.LOCAL) form.setValue("bankName", import.meta.env.VITE_BANK_NAME);
-        else form.setValue("bankName", "");
+        else if (form.getValues("bankName") === import.meta.env.VITE_BANK_NAME) form.setValue("bankName", "");
     }
 
     const mutateReceiverAllSources = () => {
@@ -244,7 +244,9 @@ export default function CreateTransactionForm({ receiver, setReceiver, onCreateS
 
         if (form.getValues("bankName") === import.meta.env.VITE_BANK_NAME) changeMethod(MethodEnum.LOCAL);
         else changeMethod(MethodEnum.INTERBANK);
-        
+
+        console.log("BANK NAME", beneficiary.bank)
+
         mutateReceiverAllSources();
     }
 
@@ -276,7 +278,7 @@ export default function CreateTransactionForm({ receiver, setReceiver, onCreateS
                                     render={({ field }) => (
                                         <FormItem className="max-w-[200px]">
                                             <FormLabel>Ngân hàng</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Chọn ngân hàng..." />
@@ -284,7 +286,7 @@ export default function CreateTransactionForm({ receiver, setReceiver, onCreateS
                                                 </FormControl>
                                                 <SelectContent>
                                                     {bankNames.map(bankName =>
-                                                        <SelectItem value={bankName}>{bankName}</SelectItem>
+                                                        <SelectItem key={bankName} value={bankName}>{bankName}</SelectItem>
                                                     )}
                                                 </SelectContent>
                                             </Select>
