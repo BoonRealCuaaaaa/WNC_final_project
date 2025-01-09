@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { models } from "../lib/utils/database/index.js";
 import User from "../models/User.js";
-import { col } from "sequelize";
+import { col, where } from "sequelize";
 import { sequelize } from "../lib/utils/database/index.js";
 import { hashPassword } from "../lib/utils/bcrypt/index.js";
+import { Op } from "sequelize";
 
 export const getTellers = async (req, res) => {
   try {
@@ -125,8 +126,21 @@ export const deleteTeller = async (req, res) => {
 };
 
 export const getTransactions = async (req, res) => {
+  const { from, to, bankName } = req.query;
+
+  const whereClause = { createdAt: {} };
+  if (from) whereClause["createdAt"][Op.gte] = new Date(from);
+  if (to)
+    whereClause["createdAt"][Op.lte] = new Date(
+      new Date(to).setHours(23, 59, 59, 999)
+    );
+  if (bankName && bankName !== "") whereClause["desBankName"] = bankName;
+
   try {
-    const transactions = await models.Paymenttransaction.findAll();
+    const transactions = await models.Paymenttransaction.findAll({
+      where: whereClause,
+    });
+
     res.status(200).json(transactions);
   } catch (error) {
     res.status(500).json({ error: error.message });
