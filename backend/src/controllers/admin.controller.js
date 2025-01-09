@@ -157,8 +157,54 @@ export const getTransactions = async (req, res) => {
       order: [["createdAt", "ASC"]],
     });
 
-    res.status(200).json(transactions);
+    const [relatedCustomers, relatedBeneficiaries] = await Promise.all([
+      models.Customer.findAll({
+        include: {
+          model: models.Paymentaccount,
+          as: "paymentaccounts",
+          attributes: ["accountNumber", "balance"],
+        },
+        attributes: ["id", "fullName"],
+      }),
+      models.Beneficiaries.findAll({
+        attributes: ["accountNumber", "name", "shortName"],
+      }),
+    ]);
+
+    const customerMap = new Map();
+    relatedCustomers.forEach((customer) => {
+      if (customer.paymentaccounts) {
+        customer.paymentaccounts.forEach((acc) =>
+          customerMap.set(acc.accountNumber, customer.fullName)
+        );
+      }
+    });
+
+    const beneficiaryMap = new Map();
+    relatedBeneficiaries.forEach((b) =>
+      beneficiaryMap.set(b.accountNumber, b.name || b.shortName)
+    );
+
+    const transactionsWithType = transactions.map((tx) => {
+      const srcPerson =
+        customerMap.get(tx.srcAccount) ||
+        beneficiaryMap.get(tx.srcAccount) ||
+        "Unknown";
+        const desPerson =
+        customerMap.get(tx.desAccount) ||
+        beneficiaryMap.get(tx.desAccount) ||
+        "Unknown";
+
+      return {
+        ...tx.dataValues,
+        srcPerson,
+        desPerson
+      };
+    });
+
+    res.status(200).json(transactionsWithType);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -76,22 +76,27 @@ export const columns: ColumnDef<Transaction>[] = [
           <AvatarImage src={avatarImage} />
         </Avatar>
         <div className="flex flex-col gap-y-1">
-          {row.original.srcBankName === import.meta.env.VITE_BANK_NAME ? (
-            <div>
-            {row.original.desAccount}{" "}
-            <span className="border px-2 rounded ml-3 font-semibold">
-              {row.original.desBankName}
-            </span>
-          </div>
+          {row.original.srcBankName !== import.meta.env.VITE_BANK_NAME ? (
+            <>
+              <div>{row.original.srcPerson}</div>
+              <div>
+                {row.original.srcAccount}{" "}
+                <span className="border px-2 rounded ml-3 font-semibold border-blue-500 text-blue-500">
+                  {row.original.srcBankName}
+                </span>
+              </div>
+            </>
           ) : (
-          <div>
-            {row.original.srcAccount}{" "}
-            <span className="border px-2 rounded ml-3 font-semibold border-blue-500 text-blue-500">
-              {row.original.srcBankName}
-            </span>
-          </div>
+            <>
+              <div>{row.original.desPerson}</div>
+              <div>
+                {row.original.desAccount}{" "}
+                <span className={`border px-2 rounded ml-3 font-semibold ${row.original.desBankName !== import.meta.env.VITE_BANK_NAME && "border-blue-500 text-blue-500"}`}>
+                  {row.original.desBankName}
+                </span>
+              </div>
+            </>
           )}
-          
         </div>
       </div>
     ),
@@ -154,7 +159,7 @@ export default function TransactionHistory() {
       const transactions = await getAllTransactionsApi({
         from: date.from,
         to: date.to,
-        bankName: bankName === 'all' ? "" : bankName 
+        bankName: bankName === "all" ? "" : bankName,
       });
       return transactions;
     },
@@ -243,7 +248,9 @@ export default function TransactionHistory() {
               <SelectGroup>
                 <SelectItem value="all">Tất cả</SelectItem>
                 {partners.map((partner) => (
-                  <SelectItem key={partner.id} value={partner.bankName}>{partner.bankName}</SelectItem>
+                  <SelectItem key={partner.id} value={partner.bankName}>
+                    {partner.bankName}
+                  </SelectItem>
                 ))}
               </SelectGroup>
             </SelectContent>

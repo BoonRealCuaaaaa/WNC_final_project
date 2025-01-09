@@ -407,12 +407,9 @@ export const payBankTransfer = async (req, res) => {
       );
     } else {
       success = await PGPPayTransferApi(
-        req.headers.host,
         partner.domain,
         transaction.desAccount,
         amount,
-        transaction.srcAccount,
-        transaction.content,
         partner.ourPrivateKey,
         partner.partenerPublicKey,
         partner.partenerAlgo,

@@ -5,8 +5,10 @@ export type Transaction = {
   status: string;
   srcAccount: string;
   srcBankName: string;
+  srcPerson: string;
   desAccount: string;
   desBankName: string;
+  desPerson: string;
   createdAt: Date;
   updatedAt: Date;
 };

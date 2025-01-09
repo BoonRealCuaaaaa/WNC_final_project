@@ -42,6 +42,7 @@ export default function BankingResult() {
 
   const handleButtonClick = () => {
     if (isSaved) {
+      console.log(paymentTransaction);
       mutateCreateBeneficiary(
         {
           bankName: paymentTransaction.desBankName,

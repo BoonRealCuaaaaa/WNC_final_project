@@ -55,7 +55,7 @@ export const PGPSearchAccountApi = async (domain, accountNumber, secretKey) => {
         ),
       })
     ).data;
-    return { accountNumber: data.account_number, fullName: data.id };
+    return { accountNumber: data.account_number, fullName: data.name };
   } catch (error) {
     console.error(error);
   }

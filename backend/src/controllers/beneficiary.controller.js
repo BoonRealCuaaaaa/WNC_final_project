@@ -17,6 +17,8 @@ export const getBeneficiaries = async (req, res) => {
 export const createBeneficiary = async (req, res) => {
   const { shortName, bankName, accountNumber } = req.body;
 
+  console.log(req.body);
+
   const customer = await models.Customer.findOne({
     where: { userId: req.user.id },
     attributes: ["id"],
@@ -47,7 +49,11 @@ export const createBeneficiary = async (req, res) => {
     });
   } else {
     //Interbank
-    receiver = await PGPSearchAccountApi(bankName, accountNumber);
+    const partner = await models.Partners.findOne({
+      where: { bankName },
+    });
+  
+    receiver = await PGPSearchAccountApi(partner.domain, accountNumber, partner.partenerSecretKey);
   }
 
   if (!receiver) {
@@ -62,7 +68,7 @@ export const createBeneficiary = async (req, res) => {
   }
   else {
     //TODO: Add search name interbank
-    name = "???";
+    name = receiver.fullName;
   }
 
   const beneficiaryEntity = await models.Beneficiaries.create({
