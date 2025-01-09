@@ -7,7 +7,7 @@ services:
       VITE_RECAPTCHA_SITE_KEY: 6LfEtJQqAAAAAMlBVDK53sVrpabjBCLXjVLQKW-Z
       VITE_RECAPCHA_SECRET_KEY: 6LfEtJQqAAAAACiYXfGs0p23Xa0nKn4d0xLKQffF
       VITE_API_APP: http://localhost:5555
-      VITE_BANK_NAME: "Ngân hàng A"
+      VITE_BANK_NAME: "MyBank"
     ports:
       - "5173:5173"
     networks:
