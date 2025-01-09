@@ -19,6 +19,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5555:5555"
+    restart: "unless-stopped"
     environment:
       DB_HOST: db
       DB_PORT: 3306
