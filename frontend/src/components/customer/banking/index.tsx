@@ -35,6 +35,6 @@ export default function Banking() {
         case "OTP":
             return <BankingOtpForm receiverName={receiver} onReturn={onReturnFromOTP} onBankingResult={onBankingResult}/>
         case "RESULT":
-            return <BankingResult receiverName={receiver} desAccount={paymentTransaction.desAccount} desBankName={paymentTransaction.desBankName} amount={paymentTransaction.feePayer === FeePayer.RECEVIER ? paymentTransaction.amount - paymentTransaction.fee : paymentTransaction.amount}/>
+            return <BankingResult/>
     }
 }

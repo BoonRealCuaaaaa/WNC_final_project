@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Check } from "react-bootstrap-icons";
 import { Button } from "@/components/ui/button";
 import useAppStore from "@/store";
+import { toast } from "@/hooks/use-toast";
+import { createBeneficiaryApi } from "@/api/beneficiaries.api";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 
 export default function BankingResult() {
@@ -13,10 +17,33 @@ export default function BankingResult() {
     setIsSaved(!isSaved);
   };
 
+  const { mutate: mutateCreateBeneficiary } = useMutation({
+    mutationFn: createBeneficiaryApi,
+    onSuccess: (response) => {
+      if (response.status === 201) {
+        toast({
+          variant: "default",
+          title: "Thêm người thụ hưởng thành công",
+        });
+      }
+    },
+    onError: (error: AxiosError) => {
+      const message = (error.response?.data as { message: string }).message;
+      toast({
+        variant: "destructive",
+        title: "Thêm người thụ hưởng thất bại",
+        description: message,
+      });
+    },
+  });
+
   const { paymentTransaction, resetPaymentTransaction, saveForNextBanking} = useAppStore((state) => state);
 
   const handleButtonClick = () => {
-    if (isSaved) saveForNextBanking();
+    if (isSaved) {
+      mutateCreateBeneficiary({ bankName: paymentTransaction.desBankName, accountNumber: paymentTransaction.desAccount, remindName: paymentTransaction.desOwner });
+      saveForNextBanking();
+    }
     else resetPaymentTransaction();
     
     navigate("/account-management");
