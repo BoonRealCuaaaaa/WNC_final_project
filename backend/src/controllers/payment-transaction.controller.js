@@ -281,13 +281,19 @@ export const generateOtpForBankTransfer = async (req, res) => {
 
   const otp = generateOTP();
 
-  let receiver, interbank, fee;
+  let receiver, receiverName, interbank, fee;
 
   if (desBankName === process.env.BANK_NAME) {
     //Local banking
     receiver = await models.Paymentaccount.findOne({
       where: { accountNumber: desAccount },
     });
+
+    const receiverUser = await models.Customer.findOne({
+      where: {id: receiver.customerId}
+    })
+    
+    receiverName = receiverUser.fullName;
     fee = INTERNAL_TRANSACTION_FEE;
   } else {
     //Interbank banking
@@ -345,7 +351,7 @@ export const generateOtpForBankTransfer = async (req, res) => {
     id: paymentTransaction.id,
     amount: paymentTransaction.amount,
     content: paymentTransaction.content,
-    desOwner: sender.customer.fullName,
+    desOwner: receiverName,
     desAccount: paymentTransaction.desAccount,
     desBankName: paymentTransaction.desBankName,
     fee: paymentTransaction.fee,
