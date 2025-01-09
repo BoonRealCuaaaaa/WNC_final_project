@@ -31,8 +31,8 @@ export const deleteTellerApi = async (tellerId: number) => {
   return (await instance.delete(`/admin/tellers/${tellerId}`)).data;
 };
 
-export const getAllTransactionsApi = async () => {
-  return (await instance.get("/admin/transactions-history")).data;
+export const getAllTransactionsApi = async ({from, to, bankName}: {from: Date, to: Date, bankName: string}) => {
+  return (await instance.get(`/admin/transactions-history?from=${from}&to=${to}&bankName=${bankName}`)).data;
 };
 
 export const addPartnerApi = async ({
