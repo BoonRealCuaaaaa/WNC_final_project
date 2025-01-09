@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPaymentHistoryApi } from "@/api/customer.api";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
-import { Avatar, Table, Input, Tag } from "antd";
+import { Avatar, Table, Input, Tag, Switch } from "antd";
 import { useState } from "react";
 import { SortOrder } from "antd/es/table/interface";
 import { formatBankAccountNumber } from "@/lib/string";
@@ -23,6 +23,7 @@ const PaymentTransactionManagement = () => {
   });
 
   const [searchText, setSearchText] = useState("");
+  const [showLast30Days, setShowLast30Days] = useState(false);
 
   const columns = [
     {
@@ -118,25 +119,34 @@ const PaymentTransactionManagement = () => {
   if (isLoading) {
     return <div>Loading...</div>;
   }
-  // Extract the filtered transactions to a variable to avoid duplication
 
-  const filteredTransactions = transactions.data.filter(
-    (item: Transaction) =>
-      item?.relatedPerson?.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.accountNumber.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const last30Days = new Date();
+  last30Days.setDate(last30Days.getDate() - 30);
+  const filteredTransactions = transactions.data.filter((item: Transaction) => {
+    const matchesSearch =
+      item.relatedPerson.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.accountNumber.toLowerCase().includes(searchText.toLowerCase());
+    const within30Days = new Date(item.createdAt) >= last30Days;
+    return matchesSearch && (!showLast30Days || within30Days);
+  });
 
   return (
     <div className="w-full border rounded-lg flex flex-col p-4 space-y-5">
       <div className="flex flex-row justify-between items-center">
         <div>
           <p className="font-semibold">Lịch sử giao dịch</p>
-          <p className="text-gray-500 text-sm">
-            *Chỉ hiển thị các giao dịch trong vòng 30 ngày
-          </p>
           <p className="text-gray-500">
             {filteredTransactions.length} giao dịch
           </p>
+        </div>
+        <div className="flex items-center space-x-2 text-sm">
+          <Switch
+            className="transform scale-80"
+            checked={showLast30Days}
+            onChange={(checked) => setShowLast30Days(checked)}
+            style={{ backgroundColor: showLast30Days ? "#BA55D3" : undefined }}
+          />
+          <span className="text-gray-500">*Hiển thị 30 ngày gần đây</span>
         </div>
       </div>
       <Input

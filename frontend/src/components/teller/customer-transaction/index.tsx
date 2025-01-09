@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCustomerTransactionApi } from "@/api/teller.api";
 import { formatCurrency } from "@/shared/lib/utils/format-currency";
-import { Avatar, Table, Input, Tag } from "antd";
+import { Avatar, Table, Input, Tag, Switch } from "antd";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { SortOrder } from "antd/es/table/interface";
@@ -27,6 +27,7 @@ const CustomerTransactionManagement = () => {
   });
 
   const [searchText, setSearchText] = useState("");
+  const [showLast30Days, setShowLast30Days] = useState(false);
 
   const columns = [
     {
@@ -123,11 +124,15 @@ const CustomerTransactionManagement = () => {
     return <div>Loading...</div>;
   }
 
-  const filteredTransactions = transactions.filter(
-    (item: Transaction) =>
-      item?.relatedPerson?.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.accountNumber.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const last30Days = new Date();
+  last30Days.setDate(last30Days.getDate() - 30);
+  const filteredTransactions = transactions.filter((item: Transaction) => {
+    const matchesSearch =
+      item.relatedPerson.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.accountNumber.toLowerCase().includes(searchText.toLowerCase());
+    const within30Days = new Date(item.createdAt) >= last30Days;
+    return matchesSearch && (!showLast30Days || within30Days);
+  });
 
   return (
     <div className="w-full border rounded-lg flex flex-col p-4 space-y-5">
@@ -138,10 +143,19 @@ const CustomerTransactionManagement = () => {
             {filteredTransactions.length} giao dịch
           </p>
         </div>
+        <div className="flex items-center space-x-2 text-sm">
+          <Switch
+            className="transform scale-80"
+            checked={showLast30Days}
+            onChange={(checked) => setShowLast30Days(checked)}
+            style={{ backgroundColor: showLast30Days ? "#BA55D3" : undefined }}
+          />
+          <span className="text-gray-500">*Hiển thị 30 ngày gần đây</span>
+        </div>
       </div>
       <Input
         className="w-64"
-        placeholder="TÌm kiếm"
+        placeholder="Tìm kiếm"
         value={searchText}
         onChange={(e) => {
           setSearchText(e.target.value);

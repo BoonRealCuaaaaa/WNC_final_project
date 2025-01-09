@@ -168,32 +168,12 @@ export const getTransactionHistory = async (req, res) => {
 
     const accountNumber = paymentAccount.accountNumber;
 
-    let transactions;
-
-    if (req.user.role !== "TELLER") {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      transactions = await models.Paymenttransaction.findAll({
-        where: {
-          [Op.or]: [
-            { srcAccount: accountNumber },
-            { desAccount: accountNumber },
-          ],
-          createdAt: { [Op.gte]: thirtyDaysAgo },
-        },
-        order: [["createdAt", "DESC"]],
-      });
-    } else {
-      transactions = await models.Paymenttransaction.findAll({
-        where: {
-          [Op.or]: [
-            { srcAccount: accountNumber },
-            { desAccount: accountNumber },
-          ],
-        },
-        order: [["createdAt", "DESC"]],
-      });
-    }
+    const transactions = await models.Paymenttransaction.findAll({
+      where: {
+        [Op.or]: [{ srcAccount: accountNumber }, { desAccount: accountNumber }],
+      },
+      order: [["createdAt", "DESC"]],
+    });
 
     const transactionIds = transactions.map((tx) => tx.id);
 
@@ -290,9 +270,9 @@ export const generateOtpForBankTransfer = async (req, res) => {
     });
 
     const receiverUser = await models.Customer.findOne({
-      where: {id: receiver.customerId}
-    })
-    
+      where: { id: receiver.customerId },
+    });
+
     receiverName = receiverUser.fullName;
     fee = INTERNAL_TRANSACTION_FEE;
   } else {
