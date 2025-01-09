@@ -179,15 +179,15 @@ VALUES
   ('878765447897', 5000.00, 9),
   ('667788980010', 7000.00, 10);
 
--- Dữ liệu mẫu cho bảng Beneficiaries (chỉ có bankName là 'OWN_BANK' hoặc 'BANK A')
+-- Dữ liệu mẫu cho bảng Beneficiaries (chỉ có bankName là 'MyBank' hoặc 'BANK A')
 INSERT INTO `beneficiaries` (`name`, `shortName`, `bankName`, `accountNumber`, `customerId`)
 VALUES
   ('Alice Johnson', 'Alice', 'BANK A', '1230001234', 1),
-  ('Bob Brown', 'Bob', 'OWN_BANK', '9870009876', 4),
+  ('Bob Brown', 'Bob', 'MyBank', '9870009876', 4),
   ('Charlie White', 'Charlie', 'BANK A', '3330003333', 5),
-  ('David Green', 'David', 'OWN_BANK', '4440004444', 6),
+  ('David Green', 'David', 'MyBank', '4440004444', 6),
   ('Eve Blue', 'Eve', 'BANK A', '5550005555', 7),
-  ('Frank Grey', 'Frank', 'OWN_BANK', '6660006666', 8),
+  ('Frank Grey', 'Frank', 'MyBank', '6660006666', 8),
   ('Grace Yellow', 'Grace', 'BANK A', '7770007777', 9);
 
 -- Dữ liệu mẫu cho bảng PaymentTransaction (status dùng tiếng Việt)
