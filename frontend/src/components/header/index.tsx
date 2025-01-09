@@ -28,14 +28,18 @@ const Header = React.forwardRef<
   };
 
   const items = [
-    {
-      key: "change-password",
-      label: (
-        <div onClick={() => navigate("/change-password")}>
-          Quản lý tài khoản
-        </div>
-      ),
-    },
+    ...(roleValue === "customer"
+      ? [
+          {
+            key: "change-password",
+            label: (
+              <div onClick={() => navigate("/change-password")}>
+                Quản lý tài khoản
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       key: "logout",
       danger: true,

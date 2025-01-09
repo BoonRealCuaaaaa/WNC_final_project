@@ -18,6 +18,7 @@ import {
   verifyTellerAccount,
   verifyAdminAccount,
 } from "./src/middlewares/verify-teller-account.middleware.js";
+import { sendOtpMail } from "./src/services/email.js";
 import { swaggerUi, swaggerSpecs } from "./src/lib/utils/swagger/index.js";
 
 const app = express();
@@ -43,4 +44,5 @@ app.use("/partners", verifyToken, partnerRouter);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Swagger docs is running on http://localhost:${port}/api-docs`);
 });

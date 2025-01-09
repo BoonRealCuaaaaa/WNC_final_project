@@ -48,6 +48,10 @@ export const getCreatedDebit = async (req, res) => {
     where: { userId: req.user.id },
     attributes: ["id"],
   });
+
+  if (!customer) {
+    return res.status(404).json({ message: "Customer not found" });
+  }
   const debits = await models.Debits.findAll({
     where: { creditor: customer.id },
     include: [
@@ -79,6 +83,11 @@ export const getReceivedDebit = async (req, res) => {
     where: { userId: req.user.id },
     attributes: ["id"],
   });
+
+  if (!customer) {
+    return res.status(404).json({ message: "Customer not found" });
+  }
+
   const debits = await models.Debits.findAll({
     where: { debtor: customer.id },
     include: [

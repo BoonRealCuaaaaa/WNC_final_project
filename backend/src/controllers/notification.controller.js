@@ -7,6 +7,7 @@ export const getNotifications = async (req, res) => {
       {
         model: models.Customer,
         as: "customer",
+        attributes: ["id", "fullName", "email", "phone"],
         where: { userId },
       },
     ],

@@ -38,7 +38,7 @@ export const PGPSearchAccountApi = async (domain, accountNumber, secretKey) => {
   try {
     const desUrl = `/api/transfer/external/account-info`;
     const time = Date.now();
-    const bankCode = process.env.BANK_NAME || 'MyBank'
+    const bankCode = process.env.BANK_NAME || "MyBank";
     const data = (
       await axios.post("http://" + domain + desUrl, {
         bank_code: bankCode,
@@ -73,7 +73,7 @@ export const PGPPayTransferApi = async (
   try {
     const desUrl = `/api/transfer/external/deposit`;
     const time = Date.now();
-    const bankCode = process.env.BANK_NAME || 'MyBank'
+    const bankCode = process.env.BANK_NAME || "MyBank";
     const payload = {
       bank_code: bankCode,
       account_number: accountNumber,
@@ -87,12 +87,12 @@ export const PGPPayTransferApi = async (
         account_number: accountNumber,
         amount,
         timestamp: time,
-        signature: await generateSignature(process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || 'RSA', JSON.stringify(payload), privateKey),
-        hash: generateHash(
-          "sha256",
+        signature: await generateSignature(
+          process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || "RSA",
           JSON.stringify(payload),
-          partnerSecretKey
+          privateKey
         ),
+        hash: generateHash("sha256", JSON.stringify(payload), partnerSecretKey),
       })
     ).data;
 
@@ -147,7 +147,11 @@ export const RSAPayTransferApi = async (
           desUrl + "" + time + "" + partnerSecretKey,
           partnerSecretKey
         ),
-        signature: await generateSignature(process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || 'RSA', JSON.stringify(payload), privateKey),
+        signature: await generateSignature(
+          process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || "RSA",
+          JSON.stringify(payload),
+          privateKey
+        ),
       })
     ).data;
 
@@ -178,8 +182,8 @@ export const handleTradeInterbank = async (req, res) => {
   const srcAccount = req.body.payload.srcAccount || "";
   const content = req.body.payload.content || "";
 
-  const partner = req['bank'];
-  const partenerAlgo = process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || 'RSA';
+  const partner = req["bank"];
+  const partenerAlgo = process.env.ASYMMETRIC_ENCRYPTION_ALGORITHM || "RSA";
 
   const failMessage = JSON.stringify({ message: "fail" });
   const successMessage = JSON.stringify({ message: "success" });
@@ -187,7 +191,11 @@ export const handleTradeInterbank = async (req, res) => {
   if (amount < 1000) {
     return res.status(400).json({
       message: "fail",
-      signature: await generateSignature(partenerAlgo, failMessage, partner.ourPrivateKey),
+      signature: await generateSignature(
+        partenerAlgo,
+        failMessage,
+        partner.ourPrivateKey
+      ),
     });
   }
 
@@ -215,13 +223,21 @@ export const handleTradeInterbank = async (req, res) => {
   try {
     return res.status(200).json({
       message: "success",
-      signature: await generateSignature(partenerAlgo, successMessage, partner.ourPrivateKey),
+      signature: await generateSignature(
+        partenerAlgo,
+        successMessage,
+        partner.ourPrivateKey
+      ),
     });
   } catch (error) {
     console.error(error);
     return res.status(400).json({
       message: "fail",
-      signature: await generateSignature(partenerAlgo, failMessage, partner.ourPrivateKey),
+      signature: await generateSignature(
+        partenerAlgo,
+        failMessage,
+        partner.ourPrivateKey
+      ),
     });
   }
 };
@@ -271,10 +287,18 @@ export const searchInterbankAccount = async (req, res) => {
 
   try {
     let account = null;
-    if (partner.partenerAlgo.toUpperCase() === 'RSA') {
-      account = await RSASearchAccountApi(partnerDomain, accountNumber, partner.partenerSecretKey);
+    if (partner.partenerAlgo.toUpperCase() === "RSA") {
+      account = await RSASearchAccountApi(
+        partnerDomain,
+        accountNumber,
+        partner.partenerSecretKey
+      );
     } else {
-      account = await PGPSearchAccountApi(partnerDomain, accountNumber, partner.partenerSecretKey);
+      account = await PGPSearchAccountApi(
+        partnerDomain,
+        accountNumber,
+        partner.partenerSecretKey
+      );
     }
     return res.status(200).json(account);
   } catch (error) {

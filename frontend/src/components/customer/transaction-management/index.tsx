@@ -14,6 +14,7 @@ interface Transaction {
   accountNumber: string;
   amount: number;
   createdAt: string;
+  receive: boolean;
 }
 const PaymentTransactionManagement = () => {
   const { data: transactions, isLoading } = useQuery({
@@ -95,10 +96,10 @@ const PaymentTransactionManagement = () => {
       render: (amount, record) => (
         <span
           className={
-            record.type === "Nhận tiền" ? "text-purple-500" : "text-red-500"
+            record.receive === false ? "text-purple-500" : "text-red-500"
           }
         >
-          {record.type === "Nhận tiền" ? "+" : "-"}
+          {record.receive === false ? "+" : "-"}
           {formatCurrency(amount)}
         </span>
       ),

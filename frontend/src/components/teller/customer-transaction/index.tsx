@@ -17,6 +17,7 @@ interface Transaction {
   createdAt: string;
   customerAccountNumber: string;
   relatedBank: string;
+  receive: boolean;
 }
 const CustomerTransactionManagement = () => {
   const { id } = useParams();
@@ -99,10 +100,10 @@ const CustomerTransactionManagement = () => {
       render: (amount, record) => (
         <span
           className={
-            record.type === "Nhận tiền" ? "text-purple-500" : "text-red-500"
+            record.receive === false ? "text-purple-500" : "text-red-500"
           }
         >
-          {record.type === "Nhận tiền" ? "+" : "-"}
+          {record.receive === false ? "+" : "-"}
           {formatCurrency(amount)}
         </span>
       ),

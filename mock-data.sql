@@ -142,12 +142,13 @@ VALUES
   ('boon_real','$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6','CUSTOMER', 'ACTIVE'),
   ('david_yellow', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER', 'ACTIVE'),
   ('boonreal', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER', 'ACTIVE'),
-  ('rose', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'TELLER', 'ACTIVE');
+  ('rose', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'TELLER', 'ACTIVE'),
+  ('ronaldo', '$2b$10$HgmvOCVc5plm2zysO4NkDuKn0RNclHIR9wK7Pvn9o5b7ztKRvCds6', 'CUSTOMER', 'ACTIVE');
 
 -- Dữ liệu mẫu cho bảng Teller
 INSERT INTO `teller` (`fullName`, `email`, `phone`, `userId`)
 VALUES
-  ('John Doe', 'jane.smith@example.com', '052-521-6319', 2),
+  ('Jane Smith', 'jane.smith@example.com', '052-521-6319', 2),
   ('Rose', 'rose@example.com', '097-245-2119', 13);
 
 
@@ -161,19 +162,22 @@ VALUES
   ('Tom Brown', 'tom.brown@example.com', '044-556-6778', NULL, NULL, 7),
   ('Lucy Black', 'lucy.black@example.com', '055-667-7889', NULL, NULL, 8),
   ('Susan Green', 'susan.green@example.com', '066-778-8990', NULL, NULL, 9),
-  ('David Yellow', 'david.yellow@example.com', '077-889-9001', NULL, NULL, 10),
-  ('Boon Real', 'boonreal@example.com','111-222-3333',NULL,NULL,11);
+  ('Boon Real', 'boonreal@example.com','111-222-3333',NULL,NULL,10),
+  ('David Yellow', 'david.yellow@example.com', '077-889-9001', NULL, NULL, 11),
+  ('Cris Ronaldo', 'cr7@gmail.com','123-456-7890',NULL,NULL,14);
 
 -- Dữ liệu mẫu cho bảng PaymentAccount (thêm dấu gạch ngang vào accountNumber)
 INSERT INTO `paymentaccount` (`accountNumber`, `balance`, `customerId`)
 VALUES
   ('123456789012', 10000.00, 1),
-  ('987654321098', 5000.00, 4),
-  ('112233445566', 3000.00, 5),
-  ('998877665544', 1500.00, 6),
-  ('667788990011', 7000.00, 7),
-  ('889900112233', 2000.00, 8),
-  ('998877665544', 4000.00, 9);
+  ('987654321098', 5000.00, 2),
+  ('112233445566', 3000.00, 3),
+  ('998877665544', 1500.00, 4),
+  ('667788990011', 7000.00, 5),
+  ('889900112233', 2000.00, 6),
+  ('988877665544', 4000.00, 7),
+  ('878765447897', 5000.00, 9),
+  ('667788980010', 7000.00, 10);
 
 -- Dữ liệu mẫu cho bảng Beneficiaries (chỉ có bankName là 'OWN_BANK' hoặc 'BANK A')
 INSERT INTO `beneficiaries` (`name`, `shortName`, `bankName`, `accountNumber`, `customerId`)
@@ -196,13 +200,58 @@ VALUES
   (2500.00, 'Thanh toán dịch vụ công', '456789', '2024-12-12 16:00:00', 'ĐANG XỬ LÝ', '889900112233', 'Bank E', '5550005555', 'Bank E', 120.00, 'RECEIVER'),
   (3000.00, 'Thanh toán dịch vụ bổ sung', '567890', '2024-12-12 17:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '6660006666', 'Bank F', 100.00, 'SENDER'),
   (4000.00, 'Thanh toán đầu tư', '678901', '2024-12-12 18:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '7770007777', 'Bank G', 110.00, 'RECEIVER'),
-  (1200.00, 'Thanh toán nội bộ', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '1230001234', 'Bank A', '123456789012', 'Bank A', 220.00, 'SENDER');
+  (1200.00, 'Thanh toán nội bộ', '789012', '2024-12-12 19:00:00', 'HOÀN THÀNH', '1230001234', 'Bank A', '123456789012', 'Bank A', 220.00, 'SENDER'),
+  (800.00, 'Thanh toán phí dịch vụ', '890123', '2024-12-12 20:00:00', 'ĐANG XỬ LÝ', '667788990011', 'Bank D', '987654321098', 'Bank B', 90.00, 'RECEIVER'),
+  (950.00, 'Thanh toán phí bảo trì', '901234', '2024-12-12 21:00:00', 'HOÀN THÀNH', '889900112233', 'Bank E', '112233445566', 'Bank C', 85.00, 'SENDER'),
+  (1100.00, 'Thanh toán phí vận chuyển', '012345', '2024-12-12 22:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '667788990011', 'Bank D', 95.00, 'RECEIVER'),
+  (1300.00, 'Thanh toán phí bảo hiểm', '123456', '2024-12-12 23:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '889900112233', 'Bank E', 105.00, 'SENDER'),
+  (1400.00, 'Thanh toán phí dịch vụ', '234567', '2024-12-13 00:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '123456789012', 'Bank A', 115.00, 'RECEIVER'),
+  (1600.00, 'Thanh toán phí bảo trì', '345678', '2024-12-13 01:00:00', 'HOÀN THÀNH', '998877665544', 'Bank C', '987654321098', 'Bank B', 125.00, 'SENDER'),
+  (1700.00, 'Thanh toán phí vận chuyển', '456789', '2024-12-13 02:00:00', 'ĐANG XỬ LÝ', '667788990011', 'Bank D', '112233445566', 'Bank C', 135.00, 'RECEIVER'),
+  (1800.00, 'Thanh toán phí bảo hiểm', '567890', '2024-12-13 03:00:00', 'HOÀN THÀNH', '889900112233', 'Bank E', '998877665544', 'Bank C', 145.00, 'SENDER'),
+  (1900.00, 'Thanh toán phí dịch vụ', '678901', '2024-12-13 04:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '987654321098', 'Bank B', 155.00, 'RECEIVER'),
+  (2100.00, 'Thanh toán phí bảo trì', '789012', '2024-12-13 05:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '667788990011', 'Bank D', 165.00, 'SENDER'),
+  (2200.00, 'Thanh toán phí vận chuyển', '890123', '2024-12-13 06:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '889900112233', 'Bank E', 175.00, 'RECEIVER'),
+  (2300.00, 'Thanh toán phí bảo hiểm', '901234', '2024-12-13 07:00:00', 'HOÀN THÀNH', '998877665544', 'Bank C', '123456789012', 'Bank A', 185.00, 'SENDER'),
+  (2400.00, 'Thanh toán phí dịch vụ', '012345', '2024-12-13 08:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '998877665544', 'Bank C', 195.00, 'RECEIVER'),
+  (2500.00, 'Thanh toán phí bảo trì', '123456', '2024-12-13 09:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '667788990011', 'Bank D', 205.00, 'SENDER'),
+  (2600.00, 'Thanh toán phí vận chuyển', '234567', '2024-12-13 10:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '889900112233', 'Bank E', 215.00, 'RECEIVER'),
+  (2700.00, 'Thanh toán phí bảo hiểm', '345678', '2024-12-13 11:00:00', 'HOÀN THÀNH', '998877665544', 'Bank C', '123456789012', 'Bank A', 225.00, 'SENDER'),
+  (2800.00, 'Thanh toán phí dịch vụ', '456789', '2024-12-13 12:00:00', 'ĐANG XỬ LÝ', '123456789012', 'Bank A', '987654321098', 'Bank B', 235.00, 'RECEIVER'),
+  (2900.00, 'Thanh toán phí bảo trì', '567890', '2024-12-13 13:00:00', 'HOÀN THÀNH', '987654321098', 'Bank B', '667788990011', 'Bank D', 245.00, 'SENDER'),
+  (3000.00, 'Thanh toán phí vận chuyển', '678901', '2024-12-13 14:00:00', 'ĐANG XỬ LÝ', '112233445566', 'Bank C', '889900112233', 'Bank E', 255.00, 'RECEIVER'),
+  (3100.00, 'Thanh toán phí bảo hiểm', '789012', '2024-12-13 15:00:00', 'HOÀN THÀNH', '998877665544', 'Bank C', '123456789012', 'Bank A', 265.00, 'SENDER'),
+  (1000.00, 'Transaction 1', '123456', '2024-12-14 10:00:00', 'HOÀN THÀNH', '988877665544', 'Bank A', '112233445566', 'Bank B', 130.00, 'SENDER'),
+  (2000.00, 'Transaction 2', '123457', '2024-12-14 11:00:00', 'HOÀN THÀNH', '112233445566', 'Bank B', '988877665544', 'Bank A', 230.00, 'RECEIVER'),
+  (1500.00, 'Transaction 3', '123458', '2024-12-14 12:00:00', 'HOÀN THÀNH', '988877665544', 'Bank A', '223344556677', 'Bank C', 135.00, 'SENDER'),
+  (2500.00, 'Transaction 4', '123459', '2024-12-14 13:00:00', 'HOÀN THÀNH', '223344556677', 'Bank C', '988877665544', 'Bank A', 235.00, 'RECEIVER'),
+  (3000.00, 'Transaction 5', '123460', '2024-12-14 14:00:00', 'HOÀN THÀNH', '988877665544', 'Bank A', '334455667788', 'Bank D', 330.00, 'SENDER'),
+  (3500.00, 'Transaction 6', '123461', '2024-12-14 15:00:00', 'HOÀN THÀNH', '334455667788', 'Bank D', '988877665544', 'Bank A', 335.00, 'RECEIVER'),
+  (4000.00, 'Transaction 7', '123462', '2024-12-14 16:00:00', 'HOÀN THÀNH', '988877665544', 'Bank A', '445566778899', 'Bank E', 430.00, 'SENDER'),
+  (4500.00, 'Transaction 8', '123463', '2024-12-14 17:00:00', 'HOÀN THÀNH', '445566778899', 'Bank E', '988877665544', 'Bank A', 435.00, 'RECEIVER'),
+  (1100.00, 'Transaction 1', '223456', '2024-12-15 10:00:00', 'HOÀN THÀNH', '878765447897', 'Bank B', '556677889900', 'Bank F', 131.00, 'SENDER'),
+  (2100.00, 'Transaction 2', '223457', '2024-12-15 11:00:00', 'HOÀN THÀNH', '556677889900', 'Bank F', '878765447897', 'Bank B', 231.00, 'RECEIVER'),
+  (1600.00, 'Transaction 3', '223458', '2024-12-15 12:00:00', 'HOÀN THÀNH', '878765447897', 'Bank B', '667788990011', 'Bank G', 136.00, 'SENDER'),
+  (2600.00, 'Transaction 4', '223459', '2024-12-15 13:00:00', 'HOÀN THÀNH', '667788990011', 'Bank G', '878765447897', 'Bank B', 236.00, 'RECEIVER'),
+  (3100.00, 'Transaction 5', '223460', '2024-12-15 14:00:00', 'HOÀN THÀNH', '878765447897', 'Bank B', '778899001122', 'Bank H', 331.00, 'SENDER'),
+  (3600.00, 'Transaction 6', '223461', '2024-12-15 15:00:00', 'HOÀN THÀNH', '778899001122', 'Bank H', '878765447897', 'Bank B', 336.00, 'RECEIVER'),
+  (4100.00, 'Transaction 7', '223462', '2024-12-15 16:00:00', 'HOÀN THÀNH', '878765447897', 'Bank B', '889900112233', 'Bank I', 431.00, 'SENDER'),
+  (4600.00, 'Transaction 8', '223463', '2024-12-15 17:00:00', 'HOÀN THÀNH', '889900112233', 'Bank I', '878765447897', 'Bank B', 436.00, 'RECEIVER'),
+  (1200.00, 'Transaction 1', '323456', '2024-12-16 10:00:00', 'HOÀN THÀNH', '667788980010', 'Bank C', '990011223344', 'Bank J', 132.00, 'SENDER'),
+  (2200.00, 'Transaction 2', '323457', '2024-12-16 11:00:00', 'HOÀN THÀNH', '990011223344', 'Bank J', '667788980010', 'Bank C', 232.00, 'RECEIVER'),
+  (1700.00, 'Transaction 3', '323458', '2024-12-16 12:00:00', 'HOÀN THÀNH', '667788980010', 'Bank C', '001122334455', 'Bank K', 137.00, 'SENDER'),
+  (2700.00, 'Transaction 4', '323459', '2024-12-16 13:00:00', 'HOÀN THÀNH', '001122334455', 'Bank K', '667788980010', 'Bank C', 237.00, 'RECEIVER'),
+  (3200.00, 'Transaction 5', '323460', '2024-12-16 14:00:00', 'HOÀN THÀNH', '667788980010', 'Bank C', '112233445566', 'Bank L', 332.00, 'SENDER'),
+  (3700.00, 'Transaction 6', '323461', '2024-12-16 15:00:00', 'HOÀN THÀNH', '112233445566', 'Bank L', '667788980010', 'Bank C', 337.00, 'RECEIVER'),
+  (4200.00, 'Transaction 7', '323462', '2024-12-16 16:00:00', 'HOÀN THÀNH', '667788980010', 'Bank C', '223344556677', 'Bank M', 432.00, 'SENDER'),
+  (4700.00, 'Transaction 8', '323463', '2024-12-16 17:00:00', 'HOÀN THÀNH', '223344556677', 'Bank M', '667788980010', 'Bank C', 437.00, 'RECEIVER');
 
 -- Dữ liệu mẫu cho bảng Debits
 INSERT INTO `debits` (`amount`, `content`, `status`, `cancelReason`, `paymentTransactionsId`, `creditor`, `debtor`)
 VALUES
   (1000.00, 'Debit Transaction 1', 'Completed', NULL, 1, 1, 4),
   (500.00, 'Debit Transaction 2', 'Pending', NULL, 2, 4, 5);
+  
   
 -- Dữ liệu mẫu cho bảng Partners
 INSERT INTO `partners` (`bankName`, `domain`, `partenerPublicKey`, `partenerAlgo`, `partenerSecretKey`, `ourPrivateKey`, `ourPublicKey`)
@@ -313,7 +362,6 @@ rnHlA4WCR1LWbxSpotBVKrMHABy3QcoPaUeZJRK/qGTPCgcLS+Zo2PI9aMWm9Vru
 Tua0bq5dNBUoFI86bsx5VIEzqUlu9KOjne2wIFzWmdv+XP+Ixvook+NpnssHqlrP
 t3bGMwK559qSayYOWwIDAQAB
 -----END PUBLIC KEY-----');
-
 
 -- Dữ liệu mẫu cho bảng Notification
 INSERT INTO `notification` (`title`, `message`, `isRead`, `customerId`)
